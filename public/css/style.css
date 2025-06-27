@@ -1,0 +1,65 @@
+/* Custom CSS for Twoem Online Productions */
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* padding-top: 56px; /* Only use if navbar is fixed-top */
+}
+
+main {
+    flex: 1; /* Allows the main content to grow and push the footer down */
+}
+
+.navbar-brand img {
+    margin-right: 8px; /* Increased margin slightly */
+    height: 30px; /* Ensure consistent height with text */
+}
+
+/* Add more custom styles as needed */
+
+/* Navbar customisations */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+}
+
+.navbar-nav .nav-link {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #0056b3 !important; /* Darker blue on hover, or choose theme color */
+}
+
+.navbar-nav .nav-link.active {
+    font-weight: 600; /* Slightly bolder for active link */
+    /* color: #0d6efd !important; /* Ensure Bootstrap's primary color is used if not default */
+}
+
+
+/* Card customisations */
+.card {
+    border-radius: 0.5rem; /* Softer, more modern rounded corners */
+    /* box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); /* Optional: very subtle shadow for cards */
+}
+
+.card-title {
+    margin-bottom: 0.75rem; /* Standardize card title bottom margin */
+}
+
+.card-icon { /* If used, for services etc. */
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #0d6efd; /* Bootstrap primary color */
+}
+
+/* Main page heading consistency */
+h1.display-5, h1.h2, h2.card-title { /* Adjust selectors as needed */
+    /* color: #333; /* Slightly softer black for text if desired */
+}
+
+/* Button consistency */
+.btn {
+    border-radius: 0.3rem; /* Slightly softer button corners */
+}

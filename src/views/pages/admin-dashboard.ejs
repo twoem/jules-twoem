@@ -1,0 +1,88 @@
+<%- include('../partials/header', { title: 'Admin Dashboard' }) %>
+<%- include('../partials/navbar') %>
+
+<main class="container mt-5">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Admin Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <% if (typeof admin !== 'undefined' && admin && admin.name) { %>
+                <span class="me-3">Hello, <strong><%= admin.name %></strong>!</span>
+            <% } else { %>
+                <span class="me-3">Hello, Admin!</span>
+            <% } %>
+            <form action="/admin/logout" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <p>Welcome to the admin control panel. From here you can manage all aspects of the Twoem Online Productions website and student services.</p>
+
+    <% if (typeof admin !== 'undefined' && admin && admin.email) { %>
+        <p class="small text-muted">Logged in as: <%= admin.email %></p>
+    <% } %>
+    <p class="small text-muted">Last student/fees update by: [Admin Name] on [Date] (Placeholder - to be implemented)</p>
+
+
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Student Management</h5>
+                    <p class="card-text">Register new students, view student list, manage academic records and fees.</p>
+                    <a href="/admin/register-student" class="btn btn-primary">Register New Student</a>
+                    <a href="#" class="btn btn-secondary mt-2 disabled">View All Students (Soon)</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Course Management</h5>
+                    <p class="card-text">Add, edit, or remove courses offered.</p>
+                    <a href="#" class="btn btn-primary disabled">Manage Courses</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Notifications</h5>
+                    <p class="card-text">Send notifications to students.</p>
+                    <a href="#" class="btn btn-primary disabled">Manage Notifications</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Study Resources</h5>
+                    <p class="card-text">Upload and manage study materials for students.</p>
+                    <a href="#" class="btn btn-primary disabled">Manage Resources</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">WiFi Credentials</h5>
+                    <p class="card-text">Update WiFi SSID, password, and disclaimer.</p>
+                    <a href="#" class="btn btn-primary disabled">Manage WiFi</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">System Management</h5>
+                    <p class="card-text">Manage backups and view admin action logs.</p>
+                    <a href="#" class="btn btn-secondary disabled">Upload Backup</a>
+                    <a href="#" class="btn btn-info disabled ms-2">View Action Logs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<%- include('../partials/footer') %>

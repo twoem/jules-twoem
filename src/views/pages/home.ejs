@@ -1,0 +1,31 @@
+<%- include('../partials/header', { title: 'Home' }) %>
+<%- include('../partials/navbar') %>
+
+<main class="container mt-5">
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Welcome to Twoem Online Productions</h1>
+            <p class="col-md-8 fs-4">Your one-stop shop for digital services, government service assistance, computer education, and much more.</p>
+            <a href="/services" class="btn btn-primary btn-lg" type="button">Explore Our Services</a>
+        </div>
+    </div>
+
+    <div class="row align-items-md-stretch">
+        <div class="col-md-6">
+            <div class="h-100 p-5 text-white bg-dark rounded-3">
+                <h2>Student Portal</h2>
+                <p>Access your course materials, grades, and important announcements. Login to get started.</p>
+                <a href="/student/login" class="btn btn-outline-light" type="button">Go to Student Portal</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="h-100 p-5 bg-light border rounded-3">
+                <h2>Admin Area</h2>
+                <p>Manage students, courses, website content, and more. Secure admin login required.</p>
+                <a href="/admin/login" class="btn btn-outline-secondary" type="button">Admin Login</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

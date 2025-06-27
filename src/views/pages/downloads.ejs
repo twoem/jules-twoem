@@ -1,0 +1,47 @@
+<%- include('../partials/header', { title: 'Downloads' }) %>
+<%- include('../partials/navbar') %>
+
+<main class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Downloads</h1>
+            <p class="lead">Find public documents and other resources available for download.</p>
+
+            <h3 class="mt-5">Public Documents</h3>
+            <p>Curriculum guides, forms, and other general information.</p>
+            <div class="list-group mb-4">
+                <!-- Example Item (to be replaced with dynamic data or hardcoded links later) -->
+                <a href="#" class="list-group-item list-group-item-action disabled">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Sample Public Document 1</h5>
+                        <small>PDF, 2MB</small>
+                    </div>
+                    <p class="mb-1">A brief description of the document content goes here.</p>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action disabled">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Sample Public Document 2</h5>
+                        <small>DOCX, 500KB</small>
+                    </div>
+                    <p class="mb-1">Another useful public resource description.</p>
+                </a>
+            </div>
+
+            <h3 class="mt-5">Eulogy Documents</h3>
+            <p>These documents are available for a limited time (typically 7 days from upload).</p>
+            <div class="list-group">
+                <!-- Example Item (to be replaced with dynamic data or hardcoded links later) -->
+                 <a href="#" class="list-group-item list-group-item-action disabled">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Eulogy Sample 1 (Expires Soon)</h5>
+                        <small class="text-danger">Expires in 2 days</small>
+                    </div>
+                    <p class="mb-1">Description for the eulogy document.</p>
+                </a>
+                <p class="text-muted mt-2">No eulogy documents currently available or content will be populated here.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

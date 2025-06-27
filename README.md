@@ -1,214 +1,93 @@
-using Node.js/Bun, Python, Ruby, Go, Rust, and Elixir, desing
+# Twoem Online Productions Website
 
-Add best index to open very nicely and beautifully using the most modern cards and ui and locating all files in  best folders with best routes.
-The website is Twoem Online Productions configuring them to read the env stictlu=y in root sice ill add the env once in onreder,com and testing loccally
-Add images to the website and the ReadMe.md, let it be perfect
-### ✅ **Final Website Description for Twoem Online**
+This is the official website for Twoem Online Productions, currently under development.
 
----
+## Project Overview
 
-#### 🔷 **Website Identity**
+The website aims to provide comprehensive information about services offered by Twoem Online Productions, a student portal for course management, an admin portal for site and student administration, a downloads section, a contact form, and a gallery.
 
-* **Title Prefix**: `Twoem | Page Title` (e.g., `Twoem | Home`)
-* **Official Email (Sender)**: `twoem.website@gmail.com`
-* **Contact Receiver Email**: `twoemcyber@gmail.com`
-* **Reply-To Tag**: All replies go to `twoemcyber@gmail.com`
-* **Favicon**: `favicon.ico` in root
-* **Logo**: `logo.png` (used in navbar/footer)
-* **Hosted Downloads**: External links only, defined inside the code
+The project is built using:
+*   **Backend:** Node.js with Express.js
+*   **Templating:** EJS (Embedded JavaScript templates)
+*   **Frontend Styling:** Bootstrap 5 (via CDN), custom CSS
+*   **Core Features Planned:** User Authentication (JWT, bcrypt), Email (Nodemailer), Database integration (to be specified).
 
----
+## Current Status (As of this version)
 
-#### 🔷 **Website Tabs/Sections**
+*   Basic Express server setup is complete.
+*   EJS templating engine is configured with partials for header, navbar, and footer.
+*   Static file serving (CSS, JS, images) is operational.
+*   Environment variable management via `.env` is in place.
+*   Core pages have been structurally created with placeholder content:
+    *   Home Page
+    *   Contact Page (form UI is present; email sending logic is implemented but requires valid SMTP credentials in `.env` for actual sending)
+    *   Services Page
+    *   Downloads Page
+    *   Student Login Page (with tabs for Login, Forgot Password, New Student)
+    *   Admin Login Page
+    *   Student Dashboard (placeholder)
+    *   Admin Dashboard (placeholder)
+    *   Data Protection Policy Page
+    *   Gallery Page
+*   Basic routing for all primary sections is implemented.
+*   Initial styling using Bootstrap 5 and custom CSS enhancements applied.
 
-* Home
-* Services
-* Downloads
-* Student Portal
-* Admin Login
-* Contact
-* Data Protection
-* Gallerly Page, To show beautiful images and tags of our works
-* or any other relevant pages, 
+## Features (Target End-State)
 
----
+*   **Home:** Attractive landing page.
+*   **Services:** Detailed information on Digital Printing, Government Services, Office Services, Internet Services, and Computer Education.
+*   **Downloads:** Sections for Public Documents and time-limited Eulogy documents.
+*   **Student Portal:** Secure login, view academic scores, download certificates, check fee balances, receive notifications, access study resources, manage profile (password change, Next of Kin).
+*   **Admin Login:** Secure login for administrators.
+*   **Admin Dashboard:** Comprehensive management of students (registration, passwords, academics, fees), courses, notifications, study resources, WiFi credentials, site backups, and viewing admin action logs.
+*   **Contact:** Functional email contact form integrated with Nodemailer.
+*   **Data Protection:** Clear policy on data handling.
+*   **Gallery:** Showcase of works with images and tags.
 
-#### 🔷 **Services Offered**
+## Environment Variables
 
-##### 🖨️ **Digital Printing**
-
-* A4 & A3 Color Printing
-* Black & White Printing
-* Binding Services
-* Business Cards
-* Poster Printing
-* Lamination
-
-##### 🏛️ **Government Services**
-
-* eCitizen Support
-* NHIF Registration
-* KRA Services
-* ID Application
-* Passport Services
-* Birth Certificate Application
-
-##### 🖥️ **Office Services**
-
-* Typing Services
-* Scanning & Copying
-* CV Writing
-* Document Editing
-* Data Entry
-* Translation (English & Swahili)
-
-##### 🌐 **Internet Services**
-
-* High-Speed WiFi
-* Computer Access
-* Email Setup
-* Online Applications
-* Social Media Setup
-* File Downloads
-
-##### 🎓 **Computer Education**
-
-Courses offered under basic computer training:
-
-1. Introduction to Computers
-2. Keyboard Management
-3. Microsoft Word
-4. Microsoft Excel
-5. Microsoft Publisher
-6. Microsoft PowerPoint
-7. Microsoft Access
-8. Internet and Email
-9. Main Exams – (35% Theory + 35% Practical)
-
-
- don't show gradings in the services part, but on student’s portals 
-* **Coursework**: 30%
-* **Main Exam**: 70%
-* **Passing Grade**: 60%
-* **Certificate Access**: Only if student clears fees & scores ≥ 60%
-
----
-
-#### 🔷 **Downloads Page**
-
-* Two Sections:
-
-  * **Public Documents** (e.g., Curriculum Guides)
-  * **Eulogy Documents** (Expire after 7 days)
-* All download URLs are pasted **directly in code**, not uploaded via dashboard
-* Admin uses external file hosting (Google Drive, Dropbox, etc.)
-* Eulogy expires 7 days after upload
-* Description and arrangements to be best
-* 
-
----
-
-#### 🔷 **Admin Portal**
-
-* Admins login via `admin ID` or `email`
-* Admin data (name, email, default password) is stored in `.env`
-* Up to **three admins supported**
-* Admin name shown in dashboard greeting (`Hello, <Admin Name>`)
-* Admin sees which admin last updated student/fees
-* Can:
-
-  * Register new students
-  * Reset student passwords
-  * Send portal notifications
-  * Manage courses, marks, and academic records
-  * View/update fees, balances, and payment logs
-  * Upload and manage study resources
-  * Upload/change WiFi credentials & disclaimer
-  * Upload backup file (manually or triggered)
-  * View action logs per admin
-
----
-
-#### 🔷 **Student Portal**
-
-* Students log in via **Registration Number** and default password `Student@Twoem2025`
-* Students must change password on first login
-* Students must also fill in **Next of Kin** info after first login
-* Can:
-
-  * View academic scores
-  * View/download certificate (and eligibility download)
-  * Check fees balance and payment logs
-  * Read notifications
-  * View/download study resources
-  * View WiFi credentials and policies
-
----
-
-#### 🔷 **Contact Page**
-
-* Integrated form
-* Sends messages via `twoem.website@gmail.com`
-* Auto forwards to `twoemcyber@gmail.com`
-* Subject and message captured
-* "Reply-To" automatically set to `twoemcyber@gmail.com`
-* Configured using Gmail SMTP & App Password
-* Add a perfectly working contact us form to send emails
-* Add anything more to make this perfect
-
----
-
-#### 🔷 **Image Usage**
-
-* Icons/images sourced from **online/icon libraries**
-* All required images are:
-
-  * Logo → `logo.png`
-  * Favicon → `favicon.ico`
-* All icons for services rendered via a modern icon set (e.g., Feather Icons or Tabler Icons)
-* Decorate the website perfectly with best images you can get
----
-
-#### 🔷 **Environment Configuration (.env)**
-
-> Private data like passwords/URLs stored in `.env` (not shown here)
-
-Key Variables:
+Create a `.env` file in the root directory and populate it with the following variables. Replace placeholders with your actual sensitive values and configurations.
 
 ```env
 # Backend Environment Variables
 # -----------------------------
 
 # General
-NODE_ENV=production
+NODE_ENV=development # or production
 PORT=10000
-FRONTEND_URL=https://twoemcyberdemo2.onrender.com
+FRONTEND_URL=http://localhost:10000 # Change for production if different from backend host
 
-# Database
-DATABASE_URL=my database url will be here
-# JWT Authentication
-JWT_SECRET=REPLACE_WITH_YOUR_VERY_STRONG_RANDOM_JWT_SECRET_KEY
+# Database (Replace with your actual database connection string when implemented)
+DATABASE_URL="your_database_connection_string_here"
+
+# JWT Authentication (Replace with strong, unique keys)
+JWT_SECRET="YOUR_VERY_STRONG_RANDOM_JWT_SECRET_KEY"
 JWT_EXPIRE=365d
 
 # Admin Credentials
-ADMIN1_EMAIL=twoemcyber@gmail.com
-ADMIN1_NAME="Twoem Online"
-ADMIN1_PASSWORD_HASH="Adm@Twom2025"
-ADMIN2_EMAIL=twoemcyber@gmail.com
-ADMIN2_NAME="Twoem Online"
-ADMIN2_PASSWORD="Adm@Twom2025"
-ADMIN3_EMAIL=twoemcyber@gmail.com
-ADMIN3_NAME="Twoem Online"
-ADMIN3_PASSWORD_HASH="Adm@Twom2025"
+# IMPORTANT: These ADMINX_PASSWORD_HASH fields MUST contain actual bcrypt hashes.
+# Generate these hashes from your desired admin passwords using a bcrypt tool/script (see below).
+ADMIN1_EMAIL=admin1@example.com
+ADMIN1_NAME="Admin User One"
+ADMIN1_PASSWORD_HASH="PLACEHOLDER_BCRYPT_HASH_FOR_ADMIN1" # e.g., $2b$10$somehashvalue..........
 
-# Email Configuration
+ADMIN2_EMAIL=admin2@example.com
+ADMIN2_NAME="Admin User Two"
+ADMIN2_PASSWORD_HASH="PLACEHOLDER_BCRYPT_HASH_FOR_ADMIN2"
+
+ADMIN3_EMAIL=admin3@example.com
+ADMIN3_NAME="Admin User Three"
+ADMIN3_PASSWORD_HASH="PLACEHOLDER_BCRYPT_HASH_FOR_ADMIN3"
+
+# Email Configuration (Use Gmail App Password for SMTP_PASS if using Gmail with 2FA)
 SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=twoem.website@gmail.com
-SMTP_PASS="i will place my app password here"
+SMTP_PORT=587 # or 465 for SSL
+SMTP_USER=twoem.website@gmail.com # Your Gmail account
+SMTP_PASS="YOUR_GMAIL_APP_PASSWORD_HERE" # Your Gmail App Password
 EMAIL_FROM_NAME="Twoem Online Productions"
-EMAIL_FROM="Twoem Online Productions <twoem.website@gmail.com>"
-CONTACT_RECEIVER_EMAIL=twoemcyber@gmail.com
+EMAIL_FROM="Twoem Online Productions <twoem.website@gmail.com>" # Sender name and email
+CONTACT_RECEIVER_EMAIL=twoemcyber@gmail.com # Email that receives contact form submissions
+REPLY_TO_EMAIL=twoemcyber@gmail.com # Default Reply-To for emails sent by the system (e.g., contact form confirmation)
 
 # Student Settings
 DEFAULT_STUDENT_PASSWORD=Student@Twoem2025
@@ -218,61 +97,86 @@ PASSWORD_MIN_LENGTH=8
 # Academic Settings
 PASSING_GRADE=60
 
-ADD MORE RELEVANT LIKE ADMINS DETAILS TO LOG IN AND NAMES
+# Session Secret (if using express-session, replace with a strong secret)
+SESSION_SECRET="YOUR_STRONG_SESSION_SECRET_FOR_EXPRESS_SESSION"
+DEBUG=false # Set to true for more verbose logging if implemented
 ```
 
----
+**Generating Admin Password Hashes:**
+You *must* generate bcrypt hashes for your admin passwords. Plain text passwords will not work with the planned authentication system. You can do this with a simple Node.js script:
 
-*Student Login Page Features* 
----
+1.  Save the following as `generate-hash.js` in the project root:
+    ```javascript
+    // generate-hash.js
+    const bcrypt = require('bcryptjs');
+    const password = "yourChosenPassword"; // Replace with the actual password for an admin
 
-### 🔐 **Student Login Page Features**
+    if (password === "yourChosenPassword") {
+        console.log("Please replace 'yourChosenPassword' in the script with an actual password.");
+        process.exit(1);
+    }
 
-The **Student Login Page** offers three distinct, intuitive options to support secure and user-friendly access for learners:
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+    console.log(`Password: ${password}`);
+    console.log(`Hash: ${hash}`);
+    console.log("\nCopy the generated hash and paste it into your .env file for the appropriate ADMINX_PASSWORD_HASH variable.");
+    ```
+2.  Ensure `bcryptjs` is installed (`npm install bcryptjs` or it's already a project dependency).
+3.  Run the script: `node generate-hash.js`.
+4.  Replace `"yourChosenPassword"` in the script with the desired password before running.
+5.  Copy the output hash into your `.env` file for `ADMIN1_PASSWORD_HASH`, `ADMIN2_PASSWORD_HASH`, etc.
 
----
+## Project Structure Highlights
 
-#### 1. ✅ **Login**
+```
+/
+├── public/                     # Static assets (CSS, JS, images)
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── src/                        # Source code
+│   ├── controllers/            # Request handlers
+│   ├── views/                  # EJS templates
+│   │   ├── pages/              # Page-specific templates
+│   │   └── partials/           # Reusable template partials (header, footer, etc.)
+│   ├── routes/                 # Route definitions
+│   ├── models/                 # Database models/schemas (to be added)
+│   ├── services/               # Business logic (to be added)
+│   ├── middleware/             # Custom middleware (e.g., auth) (to be added)
+│   └── config/                 # Configuration files (e.g., mailer.js, database.js)
+├── .env                        # Environment variables (MUST BE CREATED by user)
+├── .gitignore                  # Specifies intentionally untracked files
+├── package.json                # Project metadata and dependencies
+├── server.js                   # Main application entry point
+└── README.md                   # This file
+```
 
-* Students log in using their:
+## Setup and Running Locally
 
-  * **Registration Number** (provided by admin)
-  * **Password** (default or updated)
-* On first login:
+1.  **Clone the repository (if you haven't already).**
+2.  **Navigate to the project directory:**
+    ```bash
+    cd path/to/twoem-online-productions
+    ```
+3.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+4.  **Create and configure your `.env` file:**
+    *   Copy `.env.example` (if provided in future) or create `.env` manually from the structure above.
+    *   Fill in all required environment variables, especially `SMTP_USER`, `SMTP_PASS`, and generate/add `ADMINX_PASSWORD_HASH` values.
+5.  **Start the server:**
+    ```bash
+    npm start
+    ```
+    The application should then be accessible at the URL specified by `FRONTEND_URL` and `PORT` (e.g., `http://localhost:10000` by default).
 
-  * Forced password change is required
-  * Student is prompted to complete personal profile, including **Next of Kin** details
+## Deployment (Example: Render.com)
 
----
-
-#### 2. 🔁 **Forgot Password**
-
-* For students who forget their credentials:
-
-  * Prompted to enter:
-
-    * **Registration Number**
-    * **Registered Email Address**
-  * System verifies both details against student records
-  * If valid, a **6-character One-Time Reset Code** is sent to their email
-  * Student uses this code to reset their password securely
-
----
-
-#### 3. 🆕 **New Student? (One-Time Login Credentials)**
-
-* Allows students who’ve been registered by an admin but haven't received login details to retrieve them
-* Student provides:
-
-  * **Email Address**
-  * **First Name**
-* If verified:
-
-  * The system displays their **One-Time Login Credentials** (Registration Number + Temporary Password)
-  * These credentials are **usable only once** per email
-  * After first login, student must update password and profile
-
----
-
-
-use best codes deployable on Render.com and ensure all codes are present ans perfect with no error to avoid deployment issues on onrender
+*   Ensure your `package.json` has a `start` script: `"scripts": { "start": "node server.js", ... }`.
+*   Render.com typically auto-detects Node.js projects.
+*   Set all the required environment variables (from your `.env` file) in the Render.com service's environment settings dashboard. **Do not commit your `.env` file.**
+*   Specify the Node.js version in Render settings if your project requires a specific one (e.g., via `engines` in `package.json` or Render's settings).
+*   A database service (like Render Postgres) will need to be created and its connection URL used for `DATABASE_URL` in the environment variables on Render.
+```

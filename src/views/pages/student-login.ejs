@@ -1,0 +1,92 @@
+<%- include('../partials/header', { title: 'Student Portal Login' }) %>
+<%- include('../partials/navbar') %>
+
+<main class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="studentLoginTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab" aria-controls="login-panel" aria-selected="true">Login</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="forgot-password-tab" data-bs-toggle="tab" data-bs-target="#forgot-password-panel" type="button" role="tab" aria-controls="forgot-password-panel" aria-selected="false">Forgot Password</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="new-student-tab" data-bs-toggle="tab" data-bs-target="#new-student-panel" type="button" role="tab" aria-controls="new-student-panel" aria-selected="false">New Student?</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Placeholder for messages -->
+                    <% if (typeof message !== 'undefined' && message) { %>
+                        <div class="alert alert-info"><%= message %></div>
+                    <% } %>
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="alert alert-danger"><%= error %></div>
+                    <% } %>
+
+                    <div class="tab-content" id="studentLoginTabContent">
+                        <!-- Login Panel -->
+                        <div class="tab-pane fade show active" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
+                            <h4 class="mb-3">Student Login</h4>
+                            <form action="/student/login" method="POST"> <!-- Actual action/logic to be implemented later -->
+                                <div class="mb-3">
+                                    <label for="registrationNumber" class="form-label">Registration Number</label>
+                                    <input type="text" class="form-control" id="registrationNumber" name="registrationNumber" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">Login</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Forgot Password Panel -->
+                        <div class="tab-pane fade" id="forgot-password-panel" role="tabpanel" aria-labelledby="forgot-password-tab">
+                            <h4 class="mb-3">Forgot Password</h4>
+                            <form action="/student/forgot-password" method="POST"> <!-- Actual action/logic to be implemented later -->
+                                <div class="mb-3">
+                                    <label for="forgotRegNum" class="form-label">Registration Number</label>
+                                    <input type="text" class="form-control" id="forgotRegNum" name="registrationNumber" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="forgotEmail" class="form-label">Registered Email Address</label>
+                                    <input type="email" class="form-control" id="forgotEmail" name="email" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-warning">Send Reset Code</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- New Student Panel -->
+                        <div class="tab-pane fade" id="new-student-panel" role="tabpanel" aria-labelledby="new-student-tab">
+                            <h4 class="mb-3">New Student? Retrieve Credentials</h4>
+                            <p class="text-muted small">If you have been registered by an admin but haven't received your login details, retrieve them here.</p>
+                            <form action="/student/retrieve-credentials" method="POST"> <!-- Actual action/logic to be implemented later -->
+                                <div class="mb-3">
+                                    <label for="newStudentEmail" class="form-label">Your Email Address</label>
+                                    <input type="email" class="form-control" id="newStudentEmail" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newStudentFirstName" class="form-label">Your First Name</label>
+                                    <input type="text" class="form-control" id="newStudentFirstName" name="firstName" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-info">Get My Login Details</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>
