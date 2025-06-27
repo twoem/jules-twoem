@@ -89,7 +89,8 @@ const logoutAdmin = (req, res) => {
         expires: new Date(0),
         path: '/admin'
     });
-    res.redirect('/admin/login?message=You+have+been+logged+out+successfully.');
+    req.flash('success_msg', 'You have been logged out successfully.');
+    res.redirect('/admin/login');
 };
 
 module.exports = {

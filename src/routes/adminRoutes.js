@@ -51,4 +51,18 @@ router.post('/register-student', authAdmin, adminController.registerStudent);
 // router.get('/students/edit/:id', authAdmin, adminController.renderEditStudentForm);
 // router.post('/students/edit/:id', authAdmin, adminController.updateStudent);
 
+
+// Course Management Routes
+router.get('/courses', authAdmin, adminController.listCourses);
+router.get('/courses/add', authAdmin, adminController.renderAddCourseForm);
+router.post('/courses/add', authAdmin, adminController.addCourse); // addCourse includes validation
+router.get('/courses/edit/:id', authAdmin, adminController.renderEditCourseForm);
+router.post('/courses/edit/:id', authAdmin, adminController.updateCourse); // updateCourse includes validation
+router.post('/courses/delete/:id', authAdmin, adminController.deleteCourse);
+
+// Admin - Student Viewing Routes
+router.get('/students', authAdmin, adminController.listStudents);
+router.get('/students/view/:id', authAdmin, adminController.viewStudentDetails);
+
+
 module.exports = router;

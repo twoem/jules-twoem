@@ -63,6 +63,148 @@ function initializeDb() {
         // Note: 'updated_at' timestamp for 'students' table will be handled by application logic
         // upon updates to ensure cross-database compatibility and simplify SQLite setup.
 
+        // Courses Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS courses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                description TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                -- Add image_url TEXT if courses have images
+            )
+        `, (err) => {
+            if (err) console.error("Error creating courses table:", err.message);
+            else console.log("Courses table checked/created.");
+        });
+
+        // Enrollments Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS enrollments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_id INTEGER NOT NULL,
+                course_id INTEGER NOT NULL,
+                enrollment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                coursework_marks INTEGER,
+                main_exam_marks INTEGER,
+                final_grade TEXT, -- e.g., 'A', 'B', 'Pass', 'Fail'
+                certificate_issued_at DATETIME,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+                FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+                UNIQUE(student_id, course_id) -- Student can only enroll in a course once
+            )
+        `, (err) => {
+            if (err) console.error("Error creating enrollments table:", err.message);
+            else console.log("Enrollments table checked/created.");
+        });
+
+        // Fees Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS fees (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_id INTEGER NOT NULL,
+                description TEXT NOT NULL, -- e.g., "Course Fee - MS Word", "Exam Fee"
+                total_amount REAL NOT NULL,
+                amount_paid REAL DEFAULT 0,
+                payment_date DATETIME,
+                payment_method TEXT, -- e.g., "Cash", "M-Pesa", "Bank Transfer"
+                notes TEXT,
+                logged_by_admin_id TEXT, -- Admin's ID (e.g., admin1, admin2 from .env) or email
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+            )
+        `, (err) => {
+            if (err) console.error("Error creating fees table:", err.message);
+            else console.log("Fees table checked/created.");
+        });
+
+        // Notifications Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                message TEXT NOT NULL,
+                target_audience_type TEXT DEFAULT 'all' CHECK(target_audience_type IN ('all', 'student_id', 'course_id')),
+                target_audience_identifier TEXT, -- Stores student_id or course_id if not 'all'
+                created_by_admin_id TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                -- no updated_at, notifications are typically immutable once sent
+            )
+        `, (err) => {
+            if (err) console.error("Error creating notifications table:", err.message);
+            else console.log("Notifications table checked/created.");
+        });
+
+        // Study Resources Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS study_resources (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT,
+                resource_url TEXT NOT NULL, -- Could be external URL or path to local file
+                course_id INTEGER, -- Optional: link resource to a specific course
+                uploaded_by_admin_id TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL
+            )
+        `, (err) => {
+            if (err) console.error("Error creating study_resources table:", err.message);
+            else console.log("Study_resources table checked/created.");
+        });
+
+        // Site Settings Table (for WiFi, etc.)
+        db.run(`
+            CREATE TABLE IF NOT EXISTS site_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                setting_key TEXT UNIQUE NOT NULL, -- e.g., 'wifi_ssid', 'wifi_password', 'wifi_disclaimer'
+                setting_value TEXT,
+                description TEXT, -- Optional description of the setting
+                updated_by_admin_id TEXT,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => {
+            if (err) console.error("Error creating site_settings table:", err.message);
+            else console.log("Site_settings table checked/created.");
+        });
+
+        // Action Logs Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS action_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                admin_id TEXT NOT NULL, -- Admin's ID or email
+                action_type TEXT NOT NULL, -- e.g., "STUDENT_REGISTERED", "COURSE_CREATED", "FEE_LOGGED"
+                description TEXT, -- More details about the action
+                target_entity_type TEXT, -- e.g., "student", "course"
+                target_entity_id INTEGER,
+                ip_address TEXT, -- Optional: IP address of admin
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => {
+            if (err) console.error("Error creating action_logs table:", err.message);
+            else console.log("Action_logs table checked/created.");
+        });
+
+        // Downloadable Documents Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS downloadable_documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT,
+                file_url TEXT NOT NULL, -- Hardcoded URL as per spec
+                type TEXT NOT NULL CHECK(type IN ('public', 'eulogy')),
+                expiry_date DATETIME, -- NULL for public, set for eulogy
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                uploaded_by_admin_id TEXT NOT NULL -- Admin who configured this entry
+            )
+        `, (err) => {
+            if (err) console.error("Error creating downloadable_documents table:", err.message);
+            else console.log("Downloadable_documents table checked/created.");
+        });
+
     });
 }
 

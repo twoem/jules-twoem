@@ -8,51 +8,91 @@
             <p class="lead">Twoem Online Productions offers a wide range of digital, office, and government-related services to meet your needs. Explore our offerings below.</p>
             <!-- Detailed service cards will be added here later -->
 
+            <p class="lead">Twoem Online Productions offers a wide range of digital, office, and government-related services to meet your needs. Explore our offerings below.</p>
+
+            <% if (locals.error_msg) { %>
+                <div class="alert alert-danger"><%= error_msg %></div>
+            <% } %>
+
+            <div class="row mt-4 g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-primary mb-3"><i class="fas fa-print"></i></div>
+                            <h5 class="card-title">Digital Printing</h5>
+                            <p class="card-text small">A4 & A3 Color/B&W, Binding, Business Cards, Posters, Lamination.</p>
+                            <!-- <a href="#" class="btn btn-sm btn-outline-primary disabled">Learn More</a> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-primary mb-3"><i class="fas fa-landmark"></i></div>
+                            <h5 class="card-title">Government Services</h5>
+                            <p class="card-text small">eCitizen, NHIF, KRA, ID, Passport, Birth Certificate applications.</p>
+                            <!-- <a href="#" class="btn btn-sm btn-outline-primary disabled">Learn More</a> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-primary mb-3"><i class="fas fa-briefcase"></i></div>
+                            <h5 class="card-title">Office Services</h5>
+                            <p class="card-text small">Typing, Scanning, CV Writing, Document Editing, Data Entry, Translation.</p>
+                            <!-- <a href="#" class="btn btn-sm btn-outline-primary disabled">Learn More</a> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="display-4 text-primary mb-3"><i class="fas fa-wifi"></i></div>
+                            <h5 class="card-title">Internet Services</h5>
+                            <p class="card-text small">High-Speed WiFi, Computer Access, Email Setup, Online Applications.</p>
+                            <!-- <a href="#" class="btn btn-sm btn-outline-primary disabled">Learn More</a> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                         <div class="card-body text-center">
+                            <div class="display-4 text-primary mb-3"><i class="fas fa-laptop-code"></i></div>
+                            <h5 class="card-title">Computer Education</h5>
+                            <p class="card-text small">Comprehensive basic computer training courses. See course list below.</p>
+                            <!-- <a href="#computer-courses" class="btn btn-sm btn-outline-primary">View Courses</a> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-5" id="computer-courses">
+
             <div class="row mt-4">
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">🖨️ Digital Printing</h5>
-                            <p class="card-text">High-quality color and black & white printing, binding, business cards, and more.</p>
-                            <a href="#" class="btn btn-outline-primary disabled">Details Coming Soon</a>
+                <div class="col-12">
+                    <h3><i class="fas fa-graduation-cap text-primary me-2"></i>Computer Education Courses Offered</h3>
+                    <p>We offer the following courses as part of our basic computer training program. Please note that grading details (Coursework 30%, Main Exam 70%, Pass Grade 60%) are applicable and viewable within the Student Portal upon enrollment.</p>
+
+                    <% if (courses && courses.length > 0) { %>
+                        <div class="list-group mt-3">
+                            <% courses.forEach(function(course) { %>
+                                <div class="list-group-item list-group-item-action flex-column align-items-start">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1"><%= course.name %></h5>
+                                    </div>
+                                    <% if (course.description) { %>
+                                        <p class="mb-1 text-muted"><%= course.description %></p>
+                                    <% } %>
+                                </div>
+                            <% }); %>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">🏛️ Government Services</h5>
-                            <p class="card-text">Assistance with eCitizen, KRA, NHIF, ID, Passport, and Birth Certificate applications.</p>
-                            <a href="#" class="btn btn-outline-primary disabled">Details Coming Soon</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">🖥️ Office Services</h5>
-                            <p class="card-text">Typing, scanning, CV writing, document editing, data entry, and translation services.</p>
-                            <a href="#" class="btn btn-outline-primary disabled">Details Coming Soon</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">🌐 Internet Services</h5>
-                            <p class="card-text">High-speed WiFi, computer access, email setup, and online application support.</p>
-                            <a href="#" class="btn btn-outline-primary disabled">Details Coming Soon</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">🎓 Computer Education</h5>
-                            <p class="card-text">Basic computer training courses covering Microsoft Office, internet skills, and more.</p>
-                            <a href="#" class="btn btn-outline-primary disabled">Details Coming Soon</a>
-                        </div>
-                    </div>
+                    <% } else if (!locals.error_msg) { %>
+                        <div class="alert alert-info mt-3">Course list is currently being updated. Please check back soon!</div>
+                    <% } %>
+                    <% if (locals.error_msg && (!courses || courses.length === 0) ) { %>
+                        <!-- Error message already shown at the top -->
+                    <% } %>
                 </div>
             </div>
         </div>

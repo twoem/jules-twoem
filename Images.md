@@ -36,7 +36,44 @@ The gallery page (`src/views/pages/gallery.ejs`) currently uses `via.placeholder
 
 ## Icons
 
-*   **Service Icons:** To be sourced from [Feather Icons](https://feathericons.com/) or [Tabler Icons](https://tabler-icons.io/) and implemented directly in EJS templates (e.g., as SVG or using a font library if chosen). Specific icons per service will be decided during UI implementation of the Services page.
+*   **Service Category Icons (Services Page - `services.ejs`):**
+    *   Digital Printing: `fas fa-print`
+    *   Government Services: `fas fa-landmark`
+    *   Office Services: `fas fa-briefcase`
+    *   Internet Services: `fas fa-wifi`
+    *   Computer Education: `fas fa-laptop-code` (general), `fas fa-graduation-cap` (section title)
+*   **CRUD Actions (Admin - e.g., `admin/courses/index.ejs`):**
+    *   Add New: `fas fa-plus` (or `fa-user-plus` for students)
+    *   Edit: `fas fa-edit`
+    *   Delete: `fas fa-trash-alt`
+    *   View Details: `fas fa-eye`
+    *   Reset Password (planned): `fas fa-key`
+*   **Document Type Icons:** For Downloads page, icons representing PDF, DOC, etc. might be used (e.g., `fas fa-file-pdf`, `fas fa-file-word`).
+
+## Decorative & Illustrative Images (Placeholders & Ideas)
+
+| Placeholder Description           | Intended Location in Repo     | Page(s) / Section        | Purpose                                       | Current Placeholder Source / Notes        |
+| --------------------------------- | ----------------------------- | ------------------------ | --------------------------------------------- | ----------------------------------------- |
+| Homepage Hero Banner              | `public/images/home/`         | Home                     | Main welcoming visual for homepage            | e.g., `via.placeholder.com/1200x400` or Unsplash search for "community technology center" |
+| Service: Digital Printing         | `public/images/services/`     | Services (details page)  | Visual for Digital Printing section/details   | Unsplash search: "printing press", "brochures" |
+| Service: Government Services      | `public/images/services/`     | Services (details page)  | Visual for Government Services section        | Unsplash search: "official document", "government building" |
+| Service: Office Services          | `public/images/services/`     | Services (details page)  | Visual for Office Services section            | Unsplash search: "office work", "typing"  |
+| Service: Internet Services        | `public/images/services/`     | Services (details page)  | Visual for Internet Services section          | Unsplash search: "wifi router", "people using laptops" |
+| Service: Computer Education       | `public/images/services/`     | Services (details page or section header) | Visual for Computer Education section     | Unsplash search: "computer class", "students learning" |
+| *(More to be added)*              |                               |                          |                                               |                                           |
+
+
+## Potential Future Image Locations (Related to New DB Entities)
+
+This section outlines areas where images might be incorporated as features are built for the new database entities.
+
+| Feature / Entity        | Potential Image Use                     | Intended Location in Repo     | Notes                                     |
+| ----------------------- | --------------------------------------- | ----------------------------- | ----------------------------------------- |
+| Courses                 | Representative image for each course    | `public/images/courses/`      | Optional; if courses have visual branding |
+| Study Resources         | Thumbnails for video links, document previews | (External or generated)       | If resource type is visual              |
+| Student Certificates    | Template background/seal for certificates | `public/images/templates/`    | For certificate generation                |
+| User Avatars (Admin/Student) | Profile pictures                     | `public/images/avatars/`      | Optional future enhancement               |
+
 
 ---
 

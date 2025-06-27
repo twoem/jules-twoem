@@ -90,7 +90,8 @@ const logoutStudent = (req, res) => {
         expires: new Date(0),
         path: '/'
     });
-    res.redirect('/student/login?message=You+have+been+logged+out+successfully.');
+    req.flash('success_msg', 'You have been logged out successfully.');
+    res.redirect('/student/login');
 };
 
 
@@ -152,13 +153,16 @@ const handleChangePasswordInitial = async (req, res) => {
         // Check if profile completion is needed next
         const updatedStudent = await db.getAsync("SELECT is_profile_complete FROM students WHERE id = ?", [studentId]);
         if (!updatedStudent.is_profile_complete) {
+            req.flash('success_msg', 'Password changed successfully. Please complete your profile.');
             res.redirect('/student/complete-profile-initial');
         } else {
-            res.redirect('/student/dashboard?message=Password+changed+successfully');
+            req.flash('success_msg', 'Password changed successfully.');
+            res.redirect('/student/dashboard');
         }
     } catch (err) {
         console.error("Error changing initial password:", err);
-        renderWithError('An error occurred. Please try again.');
+        // renderWithError handles rendering the form with the error message
+        renderWithError('An error occurred while changing password. Please try again.');
     }
 };
 
@@ -196,14 +200,16 @@ const handleCompleteProfileInitial = async (req, res) => {
             "UPDATE students SET next_of_kin_details = ?, is_profile_complete = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
             [nokDetails, studentId]
         );
-        res.redirect('/student/dashboard?message=Profile+completed+successfully.+Welcome!');
+        req.flash('success_msg', 'Profile completed successfully. Welcome to your dashboard!');
+        res.redirect('/student/dashboard');
     } catch (err) {
         console.error("Error completing initial profile:", err);
+        // Re-render with error and preserved input
         res.status(500).render('pages/student/complete-profile-initial', {
             title: 'Complete Your Profile',
             student: req.student,
-            error: 'An error occurred. Please try again.',
-            nokName, nokRelationship, nokPhone, nokEmail
+            error: 'An error occurred while saving your profile. Please try again.',
+            nokName, nokRelationship, nokPhone, nokEmail // Pre-fill form
         });
     }
 };
@@ -284,18 +290,16 @@ const handleForgotPassword = async (req, res) => {
             // replyTo: process.env.REPLY_TO_EMAIL (optional, for system emails)
         });
 
+        req.flash('success_msg', 'OTP sent to your email. Please check your inbox (and spam folder).');
         // Redirect to a page where user can enter OTP and new password
         // Pass student_id or email or reg_no to identify the user on the next step
-        // Using query params for simplicity here. A temporary session might be more secure.
-        return res.redirect(`/student/reset-password-form?regNo=${encodeURIComponent(registrationNumber)}&message=OTP+sent+to+your+email.+Please+check+your+inbox.`);
+        // Using query params for simplicity here. A temporary session might be more secure for regNo.
+        res.redirect(`/student/reset-password-form?regNo=${encodeURIComponent(registrationNumber)}`);
 
     } catch (err) {
         console.error("Forgot password error:", err);
-        res.status(500).render('pages/student-login', {
-            title: 'Student Portal Login',
-            error: 'An error occurred. Please try again.',
-            activeTab: activeTabOnError
-        });
+        req.flash('error_msg', 'An error occurred while processing your request. Please try again.');
+        res.redirect('/student/login#forgot-password-panel'); // Redirect back to forgot password tab
     }
 };
 
@@ -382,11 +386,13 @@ const handleResetPassword = async (req, res) => {
         );
         await db.runAsync("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [tokenRecord.id]);
 
-        res.redirect('/student/login?message=Password+reset+successfully.+You+can+now+login+with+your+new+password.');
+        req.flash('success_msg', 'Password reset successfully. You can now login with your new password.');
+        res.redirect('/student/login');
 
     } catch (err) {
         console.error("Error resetting password:", err);
-        renderErrorOnResetForm('An error occurred. Please try again.');
+        // renderErrorOnResetForm already handles rendering the form with the error.
+        renderErrorOnResetForm('An error occurred while resetting your password. Please try again.');
     }
 };
 

@@ -1,4 +1,5 @@
 // src/controllers/mainController.js
+const db = require('../config/database'); // Import database connection
 
 // Renders the home page
 const renderHomePage = (req, res) => {
@@ -78,7 +79,21 @@ const renderStudentLoginPage = (req, res) => {
 };
 
 const renderServicesPage = (req, res) => {
-    res.render('pages/services', { title: 'Our Services' });
+    try {
+        const courses = await db.allAsync("SELECT id, name, description FROM courses ORDER BY name ASC");
+        res.render('pages/services', {
+            title: 'Our Services',
+            courses // Pass courses to the view
+        });
+    } catch (err) {
+        console.error("Error fetching courses for services page:", err);
+        // Render services page without courses or with an error message
+        res.status(500).render('pages/services', {
+            title: 'Our Services',
+            courses: [],
+            error_msg: "Could not load course information at this time."
+        });
+    }
 };
 
 const renderDownloadsPage = (req, res) => {
