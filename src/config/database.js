@@ -246,6 +246,22 @@ function initializeDb() {
             else console.log("Downloadable_documents table checked/created.");
         });
 
+        // Student Notification Reads Table (for "Mark as Read" functionality)
+        db.run(`
+            CREATE TABLE IF NOT EXISTS student_notification_reads (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_id INTEGER NOT NULL,
+                notification_id INTEGER NOT NULL,
+                read_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+                FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE CASCADE,
+                UNIQUE (student_id, notification_id)
+            )
+        `, (err) => {
+            if (err) console.error("Error creating student_notification_reads table:", err.message);
+            else console.log("Student_notification_reads table checked/created.");
+        });
+
     });
 }
 

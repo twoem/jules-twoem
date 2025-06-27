@@ -799,5 +799,56 @@ module.exports = {
     listResources, renderCreateResourceForm, createResource, renderEditResourceForm, updateResource, deleteResource,
     renderWifiSettingsForm, updateWifiSettings,
     listDownloadableDocuments, renderCreateDocumentForm, createDocument, renderEditDocumentForm, updateDocument, deleteDocument,
-    viewActionLogs
+    viewActionLogs,
+    // New function for admin resetting student password
+    adminResetStudentPassword
+};
+
+// --- Admin-initiated Student Password Reset ---
+const adminResetStudentPassword = async (req, res) => {
+    const studentId = req.params.studentId;
+    const adminPerformingAction = req.admin; // from authAdmin middleware
+
+    try {
+        const student = await db.getAsync("SELECT id, first_name, email FROM students WHERE id = ?", [studentId]);
+        if (!student) {
+            req.flash('error_msg', 'Student not found.');
+            return res.redirect('/admin/students');
+        }
+
+        const defaultPassword = process.env.DEFAULT_STUDENT_PASSWORD;
+        if (!defaultPassword) {
+            console.error("CRITICAL: DEFAULT_STUDENT_PASSWORD is not set in .env for admin password reset.");
+            req.flash('error_msg', 'Server configuration error: Default student password not defined.');
+            return res.redirect(`/admin/students/view/${studentId}`);
+        }
+
+        const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+        await db.runAsync(
+            "UPDATE students SET password_hash = ?, requires_password_change = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            [passwordHash, studentId]
+        );
+
+        logAdminAction(
+            adminPerformingAction.id,
+            'STUDENT_PASSWORD_RESET_BY_ADMIN',
+            `Admin ${adminPerformingAction.name} reset password for student ${student.first_name} (ID: ${studentId}) to default.`,
+            'student',
+            studentId,
+            req.ip
+        );
+
+        // Optionally, email the student that their password has been reset by an admin
+        // const { sendEmail } = require('../config/mailer');
+        // await sendEmail({ to: student.email, subject: 'Your Password Has Been Reset', html: `<p>Hello ${student.first_name},</p><p>Your password has been reset by an administrator to the default password: <strong>${defaultPassword}</strong>. You will be required to change it upon your next login.</p>` });
+
+        req.flash('success_msg', `Password for student ${student.first_name} has been reset to the default. They will be required to change it on next login.`);
+        res.redirect(`/admin/students/view/${studentId}`);
+
+    } catch (err) {
+        console.error("Error resetting student password by admin:", err);
+        req.flash('error_msg', 'Failed to reset student password. ' + err.message);
+        res.redirect(`/admin/students/view/${studentId}`);
+    }
 };

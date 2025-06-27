@@ -58,6 +58,7 @@ router.get('/my-fees', authStudent, authStudentController.viewMyFees);
 
 // Student Portal - View Notifications
 router.get('/notifications', authStudent, authStudentController.listMyNotifications);
+router.post('/notifications/mark-read/:notificationId', authStudent, authStudentController.markNotificationAsRead);
 
 // Student Portal - View Study Resources
 router.get('/study-resources', authStudent, authStudentController.listMyStudyResources);
@@ -68,6 +69,12 @@ router.get('/wifi-credentials', authStudent, authStudentController.viewWifiCrede
 // Student Portal - Certificates
 router.get('/my-certificates', authStudent, authStudentController.renderMyCertificatesPage);
 router.get('/certificate/download/:enrollmentId', authStudent, authStudentController.downloadCertificate);
+
+// Student Profile Self-Service
+router.get('/profile/change-password', authStudent, authStudentController.renderChangePasswordForm);
+router.post('/profile/change-password', authStudent, authStudentController.handleChangePassword);
+router.get('/profile/edit-nok', authStudent, authStudentController.renderEditNokForm);
+router.post('/profile/edit-nok', authStudent, authStudentController.handleUpdateNok);
 
 
 module.exports = router;

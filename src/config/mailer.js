@@ -35,25 +35,58 @@ if (process.env.NODE_ENV !== 'test') { // Avoid trying to connect during tests i
  */
 const sendEmail = async ({ to, subject, html, replyTo }) => {
     const mailOptions = {
-        from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM.match(/<(.*)>/)[1]}>`, // Extract email from "Name <email@example.com>"
+        from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM.match(/<(.*)>/)[1]}>`,
         to: to,
         subject: subject,
-        html: html,
+        html: html, // HTML content is now expected to be pre-rendered
     };
 
     if (replyTo) {
         mailOptions.replyTo = replyTo;
     }
 
-    console.log("Attempting to send email with options:", mailOptions);
+    // console.log("Attempting to send email with options:", mailOptions); // Keep for debugging if needed
     try {
         let info = await transporter.sendMail(mailOptions);
-        console.log('Message sent: %s', info.messageId);
+        console.log('Email sent: %s to %s', info.messageId, to);
         return info;
     } catch (error) {
         console.error('Error sending email:', error);
-        throw error; // Re-throw to be caught by controller
+        throw error;
     }
 };
 
-module.exports = { sendEmail };
+// New function to render EJS email template and send
+const ejs = require('ejs');
+const path = require('path');
+
+const sendEmailWithTemplate = async ({ to, subject, templateName, data, replyTo }) => {
+    // Construct the full path to the EJS template
+    const templatePath = path.join(__dirname, '../views/emails', `${templateName}.ejs`);
+
+    // Add siteUrl and logoUrl to data for use in template, if not already present
+    const emailData = {
+        ...data,
+        siteUrl: process.env.FRONTEND_URL || 'http://localhost:10000',
+        logoUrl: `${process.env.FRONTEND_URL || 'http://localhost:10000'}/logo.png` // Assuming logo is served
+    };
+
+    try {
+        const htmlContent = await ejs.renderFile(templatePath, emailData);
+
+        return sendEmail({ // Use the existing sendEmail function
+            to,
+            subject,
+            html: htmlContent,
+            replyTo
+        });
+    } catch (renderError) {
+        console.error('Error rendering email template:', renderError);
+        throw renderError; // Re-throw to be caught by controller
+    }
+};
+
+module.exports = {
+    sendEmail, // Keep original for direct HTML sending if needed elsewhere
+    sendEmailWithTemplate
+};

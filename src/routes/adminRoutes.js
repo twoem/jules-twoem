@@ -74,6 +74,9 @@ router.get('/students/:studentId/enrollments', authAdmin, adminController.render
 router.post('/students/:studentId/enrollments/add', authAdmin, adminController.enrollStudentInCourse);
 router.post('/students/enrollments/remove/:enrollmentId', authAdmin, adminController.removeStudentFromCourse);
 
+// Admin - Student Password Reset by Admin
+router.post('/students/reset-password/:studentId', authAdmin, adminController.adminResetStudentPassword);
+
 // Admin - Academic Records (Marks) Management Routes
 router.get('/enrollments/:enrollmentId/marks', authAdmin, adminController.renderEnterMarksForm);
 router.post('/enrollments/:enrollmentId/marks', authAdmin, adminController.saveMarks); // saveMarks includes validation

@@ -151,6 +151,11 @@
             <a href="/admin/students/<%= student.id %>/enrollments" class="btn btn-outline-warning ms-2">
                 <i class="fas fa-tasks"></i> Manage Enrollments
             </a>
+            <form action="/admin/students/reset-password/<%= student.id %>" method="POST" class="d-inline ms-2" onsubmit="return confirm('Are you sure you want to reset this student\'s password to the default? They will be required to change it on next login.');">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-key"></i> Reset Student Password
+                </button>
+            </form>
         </div>
 
     <% } else { %>
