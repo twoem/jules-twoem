@@ -96,8 +96,55 @@ const renderServicesPage = (req, res) => {
     }
 };
 
-const renderDownloadsPage = (req, res) => {
-    res.render('pages/downloads', { title: 'Downloads' });
+const renderDownloadsPage = async (req, res) => {
+    try {
+        const allDocuments = await db.allAsync("SELECT * FROM downloadable_documents ORDER BY type, created_at DESC");
+
+        const publicDocs = [];
+        const eulogyDocs = [];
+        const now = new Date();
+
+        allDocuments.forEach(doc => {
+            if (doc.type === 'public') {
+                publicDocs.push(doc);
+            } else if (doc.type === 'eulogy') {
+                // If no expiry_date, it implies it was never meant to expire or logic error in creation.
+                // However, spec says "Eulogy documents (Expire after 7 days)" - this was handled on creation if no date was given.
+                // If an expiry_date IS set, we use that.
+                // If expiry_date is NULL for a eulogy, we might assume it's an error or apply a default interpretation.
+                // The admin form defaults eulogy expiry to 7 days from creation if not set.
+                // So, a NULL expiry_date for a eulogy document should ideally not happen with current admin CRUD.
+                // We will filter by expiry_date if present and it's in the past.
+
+                let effectiveExpiryDate;
+                if (doc.expiry_date) {
+                    effectiveExpiryDate = new Date(doc.expiry_date);
+                } else {
+                    // If no specific expiry_date, default to 7 days from creation for eulogy docs
+                    effectiveExpiryDate = new Date(doc.created_at);
+                    effectiveExpiryDate.setDate(effectiveExpiryDate.getDate() + 7);
+                }
+
+                if (effectiveExpiryDate >= now) {
+                    eulogyDocs.push(doc);
+                }
+            }
+        });
+
+        res.render('pages/downloads', {
+            title: 'Downloads',
+            publicDocs,
+            eulogyDocs
+        });
+    } catch (err) {
+        console.error("Error fetching documents for downloads page:", err);
+        res.status(500).render('pages/downloads', {
+            title: 'Downloads',
+            publicDocs: [],
+            eulogyDocs: [],
+            error_msg: "Could not load documents at this time."
+        });
+    }
 };
 
 // Note: Dashboards will likely need auth middleware and data fetching later

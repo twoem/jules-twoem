@@ -62,5 +62,12 @@ router.get('/notifications', authStudent, authStudentController.listMyNotificati
 // Student Portal - View Study Resources
 router.get('/study-resources', authStudent, authStudentController.listMyStudyResources);
 
+// Student Portal - View WiFi Credentials
+router.get('/wifi-credentials', authStudent, authStudentController.viewWifiCredentials);
+
+// Student Portal - Certificates
+router.get('/my-certificates', authStudent, authStudentController.renderMyCertificatesPage);
+router.get('/certificate/download/:enrollmentId', authStudent, authStudentController.downloadCertificate);
+
 
 module.exports = router;

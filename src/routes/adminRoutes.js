@@ -97,5 +97,20 @@ router.get('/study-resources/edit/:id', authAdmin, adminController.renderEditRes
 router.post('/study-resources/edit/:id', authAdmin, adminController.updateResource);
 router.post('/study-resources/delete/:id', authAdmin, adminController.deleteResource);
 
+// Admin - Site Settings (WiFi) Management Routes
+router.get('/settings/wifi', authAdmin, adminController.renderWifiSettingsForm);
+router.post('/settings/wifi', authAdmin, adminController.updateWifiSettings); // updateWifiSettings includes validation
+
+// Admin - Downloadable Documents Management Routes
+router.get('/documents', authAdmin, adminController.listDownloadableDocuments);
+router.get('/documents/add', authAdmin, adminController.renderCreateDocumentForm);
+router.post('/documents/add', authAdmin, adminController.createDocument); // createDocument includes validation
+router.get('/documents/edit/:id', authAdmin, adminController.renderEditDocumentForm);
+router.post('/documents/edit/:id', authAdmin, adminController.updateDocument); // updateDocument includes validation
+router.post('/documents/delete/:id', authAdmin, adminController.deleteDocument);
+
+// Admin - View Action Logs Route
+router.get('/action-logs', authAdmin, adminController.viewActionLogs);
+
 
 module.exports = router;

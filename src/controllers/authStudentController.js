@@ -1,156 +1,53 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
+const { body, validationResult } = require('express-validator');
 
 // Student Login
-const loginStudent = async (req, res) => {
+const loginStudent = async (req, res) => { /* ... Existing ... */
     const { registrationNumber, password } = req.body;
-
     if (!registrationNumber || !password) {
-        return res.status(400).render('pages/student-login', {
-            title: 'Student Portal Login',
-            error: 'Registration number and password are required.',
-            activeTab: 'login-panel' // To keep the login tab active on error
-        });
+        return res.status(400).render('pages/student-login', { title: 'Student Portal Login', error: 'Registration number and password are required.', activeTab: 'login-panel'});
     }
-
     try {
         const student = await db.getAsync("SELECT * FROM students WHERE registration_number = ?", [registrationNumber]);
-
         if (!student) {
-            return res.status(401).render('pages/student-login', {
-                title: 'Student Portal Login',
-                error: 'Invalid registration number or password.',
-                activeTab: 'login-panel'
-            });
+            return res.status(401).render('pages/student-login', { title: 'Student Portal Login', error: 'Invalid registration number or password.', activeTab: 'login-panel'});
         }
-
         const isMatch = await bcrypt.compare(password, student.password_hash);
         if (!isMatch) {
-            return res.status(401).render('pages/student-login', {
-                title: 'Student Portal Login',
-                error: 'Invalid registration number or password.',
-                activeTab: 'login-panel'
-            });
+            return res.status(401).render('pages/student-login', { title: 'Student Portal Login', error: 'Invalid registration number or password.', activeTab: 'login-panel'});
         }
-
-        // Update last_login_at
         await db.runAsync("UPDATE students SET last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [student.id]);
-
-        // Generate JWT for student
-        const token = jwt.sign(
-            {
-                id: student.id,
-                registrationNumber: student.registration_number,
-                email: student.email,
-                firstName: student.first_name,
-                // isAdmin: false, // Explicitly set isAdmin to false or omit
-                // isStudent: true // Good practice to add
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRE || '1h' } // Use same expiry as admin for now
-        );
-
-        // Set JWT in an HTTPOnly cookie
-        // Using same 'token' cookie name as admin. This means an admin and student cannot be meaningfully logged in
-        // simultaneously in the same browser. If this needs to change, use different cookie names.
-        // The path restriction on the admin cookie ('/admin') helps, but student routes don't have this yet.
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: parseInt(process.env.JWT_EXPIRE_MS || (1 * 60 * 60 * 1000).toString(), 10), // Default 1 hour
-            path: '/' // Cookie accessible on all paths for student
-        });
-
-        // First login flow check
-        if (student.requires_password_change) {
-            return res.redirect('/student/change-password-initial');
-        }
-        if (!student.is_profile_complete) {
-            return res.redirect('/student/complete-profile-initial');
-        }
-
+        const token = jwt.sign({ id: student.id, registrationNumber: student.registration_number, email: student.email, firstName: student.first_name }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '1h' });
+        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: parseInt(process.env.JWT_EXPIRE_MS || (1 * 60 * 60 * 1000).toString(), 10), path: '/' });
+        if (student.requires_password_change) return res.redirect('/student/change-password-initial');
+        if (!student.is_profile_complete) return res.redirect('/student/complete-profile-initial');
         res.redirect('/student/dashboard');
-
     } catch (err) {
         console.error("Student login error:", err);
-        res.status(500).render('pages/student-login', {
-            title: 'Student Portal Login',
-            error: 'An error occurred during login. Please try again.',
-            activeTab: 'login-panel'
-        });
+        res.status(500).render('pages/student-login', { title: 'Student Portal Login', error: 'An error occurred during login. Please try again.', activeTab: 'login-panel'});
     }
 };
-
-// Placeholder for other student auth functions (logout, password change, profile completion)
-const logoutStudent = (req, res) => {
-    res.cookie('token', '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        expires: new Date(0),
-        path: '/'
-    });
+const logoutStudent = (req, res) => { /* ... Existing ... */
+    res.cookie('token', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', expires: new Date(0), path: '/' });
     req.flash('success_msg', 'You have been logged out successfully.');
     res.redirect('/student/login');
 };
-
-
-// Render initial password change form
-const renderChangePasswordInitialForm = (req, res) => {
-    // Check if password change is actually required
-    // This route should only be accessible if requires_password_change is true
-    // The login function already redirects here. An extra check could be added.
-    // const student = await db.getAsync("SELECT requires_password_change FROM students WHERE id = ?", [req.student.id]);
-    // if (!student || !student.requires_password_change) return res.redirect('/student/dashboard');
-
-    res.render('pages/student/change-password-initial', {
-        title: 'Change Your Password',
-        student: req.student, // from authStudent middleware
-        // Pass process.env for template access if needed for PASSWORD_MIN_LENGTH, DEFAULT_STUDENT_PASSWORD
-        // Note: EJS doesn't have direct access to process.env unless passed.
-        // For security, it's better to pass specific values rather than the whole process object.
-        defaultStudentPassword: process.env.DEFAULT_STUDENT_PASSWORD,
-        passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8
-    });
+const renderChangePasswordInitialForm = (req, res) => { /* ... Existing ... */
+    res.render('pages/student/change-password-initial', { title: 'Change Your Password', student: req.student, defaultStudentPassword: process.env.DEFAULT_STUDENT_PASSWORD, passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8 });
 };
-
-// Handle initial password change
-const handleChangePasswordInitial = async (req, res) => {
+const handleChangePasswordInitial = async (req, res) => { /* ... Existing ... */
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
-    const studentId = req.student.id; // from authStudent middleware
-
-    const renderWithError = (errorMsg, errorsArray = []) => {
-        return res.status(400).render('pages/student/change-password-initial', {
-            title: 'Change Your Password',
-            student: req.student,
-            error: errorMsg,
-            errors: errorsArray,
-            defaultStudentPassword: process.env.DEFAULT_STUDENT_PASSWORD,
-            passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8
-        });
-    };
-
-    if (currentPassword !== process.env.DEFAULT_STUDENT_PASSWORD) {
-        return renderWithError('Incorrect current default password.');
-    }
-    if (newPassword.length < (parseInt(process.env.PASSWORD_MIN_LENGTH, 10) || 8)) {
-        return renderWithError(`New password must be at least ${process.env.PASSWORD_MIN_LENGTH || 8} characters long.`);
-    }
-    if (newPassword !== confirmNewPassword) {
-        return renderWithError('New passwords do not match.');
-    }
-    if (newPassword === process.env.DEFAULT_STUDENT_PASSWORD) {
-        return renderWithError('New password cannot be the same as the default password.');
-    }
-
+    const studentId = req.student.id;
+    const renderWithError = (errorMsg) => { return res.status(400).render('pages/student/change-password-initial', { title: 'Change Your Password', student: req.student, error: errorMsg, defaultStudentPassword: process.env.DEFAULT_STUDENT_PASSWORD, passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8 }); };
+    if (currentPassword !== process.env.DEFAULT_STUDENT_PASSWORD) return renderWithError('Incorrect current default password.');
+    if (newPassword.length < (parseInt(process.env.PASSWORD_MIN_LENGTH, 10) || 8)) return renderWithError(`New password must be at least ${process.env.PASSWORD_MIN_LENGTH || 8} characters long.`);
+    if (newPassword !== confirmNewPassword) return renderWithError('New passwords do not match.');
+    if (newPassword === process.env.DEFAULT_STUDENT_PASSWORD) return renderWithError('New password cannot be the same as the default password.');
     try {
         const newPasswordHash = await bcrypt.hash(newPassword, 10);
-        await db.runAsync(
-            "UPDATE students SET password_hash = ?, requires_password_change = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-            [newPasswordHash, studentId]
-        );
-
-        // Check if profile completion is needed next
+        await db.runAsync("UPDATE students SET password_hash = ?, requires_password_change = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [newPasswordHash, studentId]);
         const updatedStudent = await db.getAsync("SELECT is_profile_complete FROM students WHERE id = ?", [studentId]);
         if (!updatedStudent.is_profile_complete) {
             req.flash('success_msg', 'Password changed successfully. Please complete your profile.');
@@ -159,437 +56,232 @@ const handleChangePasswordInitial = async (req, res) => {
             req.flash('success_msg', 'Password changed successfully.');
             res.redirect('/student/dashboard');
         }
-    } catch (err) {
-        console.error("Error changing initial password:", err);
-        // renderWithError handles rendering the form with the error message
-        renderWithError('An error occurred while changing password. Please try again.');
-    }
+    } catch (err) { console.error("Error changing initial password:", err); renderWithError('An error occurred while changing password. Please try again.');}
 };
-
-// Render initial profile completion form (Next of Kin)
-const renderCompleteProfileInitialForm = (req, res) => {
-    // Similar to password change, ensure this is only accessible if needed.
-    // const student = await db.getAsync("SELECT is_profile_complete, requires_password_change FROM students WHERE id = ?", [req.student.id]);
-    // if (!student || student.is_profile_complete || student.requires_password_change) return res.redirect('/student/dashboard');
-
-    res.render('pages/student/complete-profile-initial', {
-        title: 'Complete Your Profile',
-        student: req.student,
-        nokName: '', nokRelationship: '', nokPhone: '', nokEmail: '' // For pre-filling if validation fails
-    });
+const renderCompleteProfileInitialForm = (req, res) => { /* ... Existing ... */
+    res.render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, nokName: '', nokRelationship: '', nokPhone: '', nokEmail: '' });
 };
-
-// Handle initial profile completion
-const handleCompleteProfileInitial = async (req, res) => {
+const handleCompleteProfileInitial = async (req, res) => { /* ... Existing ... */
     const { nokName, nokRelationship, nokPhone, nokEmail } = req.body;
     const studentId = req.student.id;
-
     if (!nokName || !nokRelationship || !nokPhone) {
-        return res.status(400).render('pages/student/complete-profile-initial', {
-            title: 'Complete Your Profile',
-            student: req.student,
-            error: 'Please fill in all required Next of Kin details (Name, Relationship, Phone).',
-            nokName, nokRelationship, nokPhone, nokEmail // Pre-fill form
-        });
+        return res.status(400).render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, error: 'Please fill in all required Next of Kin details (Name, Relationship, Phone).', nokName, nokRelationship, nokPhone, nokEmail });
     }
-
     const nokDetails = JSON.stringify({ name: nokName, relationship: nokRelationship, phone: nokPhone, email: nokEmail });
-
     try {
-        await db.runAsync(
-            "UPDATE students SET next_of_kin_details = ?, is_profile_complete = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-            [nokDetails, studentId]
-        );
+        await db.runAsync("UPDATE students SET next_of_kin_details = ?, is_profile_complete = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [nokDetails, studentId]);
         req.flash('success_msg', 'Profile completed successfully. Welcome to your dashboard!');
         res.redirect('/student/dashboard');
     } catch (err) {
         console.error("Error completing initial profile:", err);
-        // Re-render with error and preserved input
-        res.status(500).render('pages/student/complete-profile-initial', {
-            title: 'Complete Your Profile',
-            student: req.student,
-            error: 'An error occurred while saving your profile. Please try again.',
-            nokName, nokRelationship, nokPhone, nokEmail // Pre-fill form
-        });
+        res.status(500).render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, error: 'An error occurred while saving your profile. Please try again.', nokName, nokRelationship, nokPhone, nokEmail });
     }
 };
-
-
-module.exports = {
-    loginStudent,
-    logoutStudent,
-    renderChangePasswordInitialForm,
-    handleChangePasswordInitial,
-    renderCompleteProfileInitialForm,
-    handleCompleteProfileInitial,
-    // Will add handleForgotPassword, renderResetPasswordForm, handleResetPassword
-};
-
-// --- Forgot Password / Reset Password ---
-
-// Utility to generate a 6-digit OTP
-function generateOtp() {
+function generateOtp() { /* ... Existing ... */
     const crypto = require('crypto');
     return crypto.randomInt(100000, 999999).toString();
 }
-
-const handleForgotPassword = async (req, res) => {
+const handleForgotPassword = async (req, res) => { /* ... Existing ... */
     const { registrationNumber, email } = req.body;
-    const activeTabOnError = 'forgot-password-panel'; // For student-login.ejs
-
-    if (!registrationNumber || !email) {
-        return res.status(400).render('pages/student-login', {
-            title: 'Student Portal Login',
-            error: 'Registration number and email are required for password reset.',
-            activeTab: activeTabOnError
-        });
-    }
-
+    const activeTabOnError = 'forgot-password-panel';
+    if (!registrationNumber || !email) { return res.status(400).render('pages/student-login', { title: 'Student Portal Login', error: 'Registration number and email are required for password reset.', activeTab: activeTabOnError }); }
     try {
-        const student = await db.getAsync(
-            "SELECT id, email, first_name FROM students WHERE registration_number = ? AND email = ?",
-            [registrationNumber, email.toLowerCase().trim()]
-        );
-
-        if (!student) {
-            return res.status(404).render('pages/student-login', {
-                title: 'Student Portal Login',
-                error: 'No student found with that registration number and email address.',
-                activeTab: activeTabOnError
-            });
-        }
-
+        const student = await db.getAsync("SELECT id, email, first_name FROM students WHERE registration_number = ? AND email = ?", [registrationNumber, email.toLowerCase().trim()]);
+        if (!student) { return res.status(404).render('pages/student-login', { title: 'Student Portal Login', error: 'No student found with that registration number and email address.', activeTab: activeTabOnError }); }
         const otp = generateOtp();
         const otpHash = await bcrypt.hash(otp, 10);
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
-
-        // Store OTP hash in database
-        await db.runAsync(
-            "INSERT INTO password_reset_tokens (student_id, token_hash, expires_at) VALUES (?, ?, ?)",
-            [student.id, otpHash, expiresAt.toISOString()]
-        );
-
-        // Send OTP email (using mailer.js - ensure it's imported if not already)
-        const { sendEmail } = require('../config/mailer'); // Assuming mailer.js is set up
-        const emailHtml = `
-            <p>Hello ${student.first_name},</p>
-            <p>You requested a password reset for your Twoem Online Productions student account.</p>
-            <p>Your One-Time Password (OTP) is: <strong>${otp}</strong></p>
-            <p>This OTP is valid for 10 minutes. If you did not request this, please ignore this email.</p>
-            <p>Enter this OTP on the password reset page.</p>
-            <br>
-            <p>Thank you,</p>
-            <p>Twoem Online Productions Team</p>
-        `;
-        const emailSubject = "Your Password Reset OTP - Twoem Online Productions";
-
-        await sendEmail({
-            to: student.email,
-            subject: emailSubject,
-            html: emailHtml,
-            // replyTo: process.env.REPLY_TO_EMAIL (optional, for system emails)
-        });
-
-        req.flash('success_msg', 'OTP sent to your email. Please check your inbox (and spam folder).');
-        // Redirect to a page where user can enter OTP and new password
-        // Pass student_id or email or reg_no to identify the user on the next step
-        // Using query params for simplicity here. A temporary session might be more secure for regNo.
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        await db.runAsync("INSERT INTO password_reset_tokens (student_id, token_hash, expires_at) VALUES (?, ?, ?)", [student.id, otpHash, expiresAt.toISOString()]);
+        const { sendEmail } = require('../config/mailer');
+        const emailHtml = `<p>Hello ${student.first_name},</p><p>Your OTP for password reset is: <strong>${otp}</strong></p><p>This OTP is valid for 10 minutes.</p>`;
+        await sendEmail({ to: student.email, subject: "Your Password Reset OTP", html: emailHtml });
+        req.flash('success_msg', 'OTP sent to your email. Please check your inbox.');
         res.redirect(`/student/reset-password-form?regNo=${encodeURIComponent(registrationNumber)}`);
-
-    } catch (err) {
-        console.error("Forgot password error:", err);
-        req.flash('error_msg', 'An error occurred while processing your request. Please try again.');
-        res.redirect('/student/login#forgot-password-panel'); // Redirect back to forgot password tab
-    }
+    } catch (err) { console.error("Forgot password error:", err); req.flash('error_msg', 'An error occurred. Please try again.'); res.redirect('/student/login#forgot-password-panel'); }
 };
-
-// Render the form to enter OTP and new password
-const renderResetPasswordForm = (req, res) => {
+const renderResetPasswordForm = (req, res) => { /* ... Existing ... */
     const { regNo, message, error } = req.query;
-    if (!regNo) {
-        // If regNo is missing, perhaps redirect to login or show a generic error
-        return res.redirect('/student/login?error=Invalid+password+reset+link+or+session.');
-    }
-    res.render('pages/student/reset-password-form', {
-        title: 'Reset Your Password',
-        registrationNumber: regNo,
-        message,
-        error,
-        passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8
-    });
+    if (!regNo) return res.redirect('/student/login?error=Invalid+password+reset+link.');
+    res.render('pages/student/reset-password-form', { title: 'Reset Your Password', registrationNumber: regNo, message, error, passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8 });
 };
-
-// Handle the actual password reset after OTP verification
-const handleResetPassword = async (req, res) => {
+const handleResetPassword = async (req, res) => { /* ... Existing ... */
     const { registrationNumber, otp, newPassword, confirmNewPassword } = req.body;
-
-    const renderErrorOnResetForm = (errorMsg) => {
-        return res.status(400).render('pages/student/reset-password-form', {
-            title: 'Reset Your Password',
-            registrationNumber,
-            error: errorMsg,
-            passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8
-        });
-    };
-
-    if (!registrationNumber || !otp || !newPassword || !confirmNewPassword) {
-        return renderErrorOnResetForm('All fields are required.');
-    }
-    if (newPassword.length < (parseInt(process.env.PASSWORD_MIN_LENGTH, 10) || 8)) {
-        return renderErrorOnResetForm(`New password must be at least ${process.env.PASSWORD_MIN_LENGTH || 8} characters.`);
-    }
-    if (newPassword !== confirmNewPassword) {
-        return renderErrorOnResetForm('New passwords do not match.');
-    }
-
+    const renderErrorOnResetForm = (errorMsg) => { return res.status(400).render('pages/student/reset-password-form', { title: 'Reset Your Password', registrationNumber, error: errorMsg, passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8 }); };
+    if (!registrationNumber || !otp || !newPassword || !confirmNewPassword) return renderErrorOnResetForm('All fields are required.');
+    if (newPassword.length < (parseInt(process.env.PASSWORD_MIN_LENGTH, 10) || 8)) return renderErrorOnResetForm(`New password must be at least ${process.env.PASSWORD_MIN_LENGTH || 8} characters.`);
+    if (newPassword !== confirmNewPassword) return renderErrorOnResetForm('New passwords do not match.');
     try {
         const student = await db.getAsync("SELECT id FROM students WHERE registration_number = ?", [registrationNumber]);
-        if (!student) {
-            return renderErrorOnResetForm('Invalid registration number.'); // Should not happen if regNo came from previous step
-        }
-
-        // Find the latest, non-used OTP for this student
-        const tokenRecord = await db.getAsync(
-            "SELECT * FROM password_reset_tokens WHERE student_id = ? AND used = FALSE ORDER BY created_at DESC LIMIT 1",
-            [student.id]
-        );
-
-        if (!tokenRecord) {
-            return renderErrorOnResetForm('No pending password reset request found, or OTP already used. Please request a new OTP.');
-        }
-
+        if (!student) return renderErrorOnResetForm('Invalid registration number.');
+        const tokenRecord = await db.getAsync("SELECT * FROM password_reset_tokens WHERE student_id = ? AND used = FALSE ORDER BY created_at DESC LIMIT 1", [student.id]);
+        if (!tokenRecord) return renderErrorOnResetForm('No pending OTP found or already used.');
         const isOtpMatch = await bcrypt.compare(otp, tokenRecord.token_hash);
-        if (!isOtpMatch) {
-            return renderErrorOnResetForm('Invalid OTP. Please check and try again.');
-        }
-
-        if (new Date() > new Date(tokenRecord.expires_at)) {
-            // Mark as used even if expired, to prevent reuse of old links/OTPs
-            await db.runAsync("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [tokenRecord.id]);
-            return renderErrorOnResetForm('OTP has expired. Please request a new one.');
-        }
-
-        // Check if new password is same as default password (if student is still on default)
-        // Or if it's same as current password (more complex, requires fetching current hash)
-        // For simplicity, just ensuring it's not the default password if they were resetting from that.
+        if (!isOtpMatch) return renderErrorOnResetForm('Invalid OTP.');
+        if (new Date() > new Date(tokenRecord.expires_at)) { await db.runAsync("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [tokenRecord.id]); return renderErrorOnResetForm('OTP has expired.'); }
         const studentDetails = await db.getAsync("SELECT requires_password_change FROM students WHERE id = ?", [student.id]);
-        if (studentDetails.requires_password_change && newPassword === process.env.DEFAULT_STUDENT_PASSWORD) {
-             return renderErrorOnResetForm('New password cannot be the same as the default password if you are resetting from it.');
+        if (studentDetails.requires_password_change && newPassword === process.env.DEFAULT_STUDENT_PASSWORD) return renderErrorOnResetForm('New password cannot be the default password.');
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        await db.runAsync("UPDATE students SET password_hash = ?, requires_password_change = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [newPasswordHash, student.id]);
+        await db.runAsync("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [tokenRecord.id]);
+        req.flash('success_msg', 'Password reset successfully. You can now login.');
+        res.redirect('/student/login');
+    } catch (err) { console.error("Error resetting password:", err); renderErrorOnResetForm('An error occurred. Please try again.'); }
+};
+const listMyNotifications = async (req, res) => { /* ... Existing ... */
+    const studentId = req.student.id;
+    try {
+        const enrolledCourses = await db.allAsync("SELECT course_id FROM enrollments WHERE student_id = ?", [studentId]);
+        const enrolledCourseIds = enrolledCourses.map(ec => ec.course_id);
+        let notifications = [];
+        if (enrolledCourseIds.length > 0) {
+            const placeholders = enrolledCourseIds.map(() => '?').join(',');
+            notifications = await db.allAsync( `SELECT * FROM notifications WHERE target_audience_type = 'all' OR (target_audience_type = 'student_id' AND target_audience_identifier = ?) OR (target_audience_type = 'course_id' AND target_audience_identifier IN (${placeholders})) ORDER BY created_at DESC`, [studentId, ...enrolledCourseIds] );
+        } else {
+            notifications = await db.allAsync( `SELECT * FROM notifications WHERE target_audience_type = 'all' OR (target_audience_type = 'student_id' AND target_audience_identifier = ?) ORDER BY created_at DESC`, [studentId] );
+        }
+        res.render('pages/student/notifications', { title: 'My Notifications', student: req.student, notifications });
+    } catch (err) { console.error("Error fetching student notifications:", err); req.flash('error_msg', 'Could not retrieve notifications.'); res.redirect('/student/dashboard'); }
+};
+const listMyStudyResources = async (req, res) => { /* ... Existing ... */
+    const studentId = req.student.id;
+    try {
+        const enrolledCourses = await db.allAsync("SELECT course_id FROM enrollments WHERE student_id = ?", [studentId]);
+        const enrolledCourseIds = enrolledCourses.map(ec => ec.course_id);
+        let resources = [];
+        let query = `SELECT sr.*, NULL as course_name FROM study_resources sr WHERE sr.course_id IS NULL`;
+        let queryParams = [];
+        if (enrolledCourseIds.length > 0) {
+            const placeholders = enrolledCourseIds.map(() => '?').join(',');
+            query += ` UNION ALL SELECT sr.*, c.name as course_name FROM study_resources sr JOIN courses c ON sr.course_id = c.id WHERE sr.course_id IN (${placeholders})`;
+            queryParams.push(...enrolledCourseIds);
+        }
+        query += " ORDER BY course_name ASC, created_at DESC";
+        resources = await db.allAsync(query, queryParams);
+        const groupedResources = resources.reduce((acc, resource) => {
+            const courseKey = resource.course_name || 'General Resources';
+            if (!acc[courseKey]) acc[courseKey] = [];
+            acc[courseKey].push(resource);
+            return acc;
+        }, {});
+        res.render('pages/student/study-resources', { title: 'My Study Resources', student: req.student, groupedResources });
+    } catch (err) { console.error("Error fetching student study resources:", err); req.flash('error_msg', 'Could not retrieve study resources.'); res.redirect('/student/dashboard'); }
+};
+const viewMyFees = async (req, res) => { /* ... Existing ... */
+    const studentId = req.student.id;
+    try {
+        const fees = await db.allAsync(`SELECT description, total_amount, amount_paid, (total_amount - amount_paid) as balance, payment_date, payment_method, notes, created_at FROM fees WHERE student_id = ? ORDER BY payment_date DESC, created_at DESC`, [studentId]);
+        let totalCharged = 0, totalPaid = 0;
+        fees.forEach(fee => { totalCharged += fee.total_amount || 0; totalPaid += fee.amount_paid || 0; });
+        const overallBalance = totalCharged - totalPaid;
+        res.render('pages/student/fees', { title: 'My Fee Statement', student: req.student, fees: fees || [], overallBalance });
+    } catch (err) { console.error("Error fetching student fee records:", err); req.flash('error_msg', 'Could not retrieve fee statement.'); res.redirect('/student/dashboard'); }
+};
+const viewMyAcademics = async (req, res) => { /* ... Existing ... */
+    const studentId = req.student.id;
+    try {
+        const student = await db.getAsync("SELECT id, first_name FROM students WHERE id = ?", [studentId]);
+        if (!student) { req.flash('error_msg', 'Student record not found.'); return res.redirect('/student/login'); }
+        const enrollments = await db.allAsync(`SELECT e.id as enrollment_id, c.name AS course_name, e.enrollment_date, e.coursework_marks, e.main_exam_marks, ((COALESCE(e.coursework_marks, 0) * 0.3) + (COALESCE(e.main_exam_marks, 0) * 0.7)) AS total_score, e.final_grade, e.certificate_issued_at FROM enrollments e JOIN courses c ON e.course_id = c.id WHERE e.student_id = ? ORDER BY c.name`, [studentId]);
+        res.render('pages/student/academics', { title: 'My Academic Records', student: req.student, enrollments: enrollments || [], PASSING_GRADE: parseInt(process.env.PASSING_GRADE) || 60 });
+    } catch (err) { console.error("Error fetching student academic records:", err); req.flash('error_msg', 'Could not retrieve academic records.'); res.redirect('/student/dashboard'); }
+};
+const viewWifiCredentials = async (req, res) => { /* ... Existing ... */
+    try {
+        const settingKeys = ['wifi_ssid', 'wifi_password_plaintext', 'wifi_disclaimer'];
+        const settingsData = await db.allAsync( `SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN (?, ?, ?)`, settingsKeys );
+        const settings = {};
+        settingsData.forEach(row => { settings[row.setting_key] = row.setting_value; });
+        res.render('pages/student/wifi-credentials', { title: 'WiFi Credentials', student: req.student, wifi_ssid: settings.wifi_ssid || 'Not Set by Admin', wifi_password: settings.wifi_password_plaintext || 'Not Set by Admin', wifi_disclaimer: settings.wifi_disclaimer || '' });
+    } catch (err) {
+        console.error("Error fetching WiFi credentials for student:", err);
+        req.flash('error_msg', 'Could not retrieve WiFi information at this time.');
+        res.redirect('/student/dashboard');
+    }
+};
+
+// --- Certificate Management (Student) ---
+const renderMyCertificatesPage = async (req, res) => {
+    const studentId = req.student.id;
+    try {
+        const feeRecords = await db.allAsync("SELECT total_amount, amount_paid FROM fees WHERE student_id = ?", [studentId]);
+        let totalCharged = 0; let totalPaid = 0;
+        feeRecords.forEach(fee => { totalCharged += fee.total_amount || 0; totalPaid += fee.amount_paid || 0; });
+        const feesCleared = (totalCharged - totalPaid) <= 0;
+
+        const passedEnrollments = await db.allAsync(`
+            SELECT e.id as enrollment_id, c.name as course_name, e.final_grade, e.certificate_issued_at
+            FROM enrollments e
+            JOIN courses c ON e.course_id = c.id
+            WHERE e.student_id = ? AND e.final_grade = 'Pass'
+            ORDER BY c.name
+        `, [studentId]);
+
+        const eligibleCertificates = passedEnrollments.map(pe => ({
+            ...pe,
+            is_eligible_for_download: feesCleared
+        }));
+
+        res.render('pages/student/certificates', {
+            title: 'My Certificates',
+            student: req.student,
+            eligibleCertificates,
+            feesCleared
+        });
+    } catch (err) {
+        console.error("Error fetching certificate eligibility:", err);
+        req.flash('error_msg', 'Could not retrieve certificate information.');
+        res.redirect('/student/dashboard');
+    }
+};
+
+const downloadCertificate = async (req, res) => {
+    const studentId = req.student.id;
+    const enrollmentId = req.params.enrollmentId;
+
+    try {
+        const feeRecords = await db.allAsync("SELECT total_amount, amount_paid FROM fees WHERE student_id = ?", [studentId]);
+        let totalCharged = 0; let totalPaid = 0;
+        feeRecords.forEach(fee => { totalCharged += fee.total_amount || 0; totalPaid += fee.amount_paid || 0; });
+        const feesCleared = (totalCharged - totalPaid) <= 0;
+
+        const enrollment = await db.getAsync(`
+            SELECT e.id, s.first_name as student_name, s.registration_number, c.name as course_name, e.final_grade, e.updated_at as completion_date
+            FROM enrollments e
+            JOIN students s ON e.student_id = s.id
+            JOIN courses c ON e.course_id = c.id
+            WHERE e.id = ? AND e.student_id = ? AND e.final_grade = 'Pass'
+        `, [enrollmentId, studentId]);
+
+        if (!enrollment) {
+            req.flash('error_msg', 'Course completion record not found or not passed.');
+            return res.redirect('/student/my-certificates');
+        }
+        if (!feesCleared) {
+            req.flash('error_msg', 'Cannot download certificate due to outstanding fees.');
+            return res.redirect('/student/my-certificates');
         }
 
-
-        // All checks passed, update password and mark OTP as used
-        const newPasswordHash = await bcrypt.hash(newPassword, 10);
-        await db.runAsync(
-            "UPDATE students SET password_hash = ?, requires_password_change = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-            [newPasswordHash, student.id]
-        );
-        await db.runAsync("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [tokenRecord.id]);
-
-        req.flash('success_msg', 'Password reset successfully. You can now login with your new password.');
-        res.redirect('/student/login');
-
+        // For now, render a simple HTML certificate template
+        res.render('pages/student/certificate-template', {
+            layout: 'partials/certificate-layout',
+            title: `Certificate - ${enrollment.course_name}`,
+            student_name: enrollment.student_name,
+            course_name: enrollment.course_name,
+            registration_number: enrollment.registration_number,
+            completion_date: new Date(enrollment.completion_date).toLocaleDateString()
+        });
     } catch (err) {
-        console.error("Error resetting password:", err);
-        // renderErrorOnResetForm already handles rendering the form with the error.
-        renderErrorOnResetForm('An error occurred while resetting your password. Please try again.');
+        console.error("Error generating certificate:", err);
+        req.flash('error_msg', 'Could not generate certificate.');
+        res.redirect('/student/my-certificates');
     }
 };
 
 module.exports = {
-    loginStudent,
-    logoutStudent,
-    renderChangePasswordInitialForm,
-    handleChangePasswordInitial,
-    renderCompleteProfileInitialForm,
-    handleCompleteProfileInitial,
-    handleForgotPassword,
-    renderResetPasswordForm,
-    handleResetPassword,
-
-    // --- Student Portal Viewing ---
-    viewMyAcademics,
-    viewMyFees,
-    listMyNotifications,
-    listMyStudyResources
-};
-
-// --- Student Portal Viewing ---
-
-const listMyNotifications = async (req, res) => {
-    const studentId = req.student.id;
-    try {
-        // Fetch student's enrolled course IDs first
-        const enrolledCourses = await db.allAsync(
-            "SELECT course_id FROM enrollments WHERE student_id = ?",
-            [studentId]
-        );
-        const enrolledCourseIds = enrolledCourses.map(ec => ec.course_id);
-
-        let notifications = [];
-        if (enrolledCourseIds.length > 0) {
-            // Constructing a placeholder string for IN clause: (?, ?, ...)
-            const placeholders = enrolledCourseIds.map(() => '?').join(',');
-            notifications = await db.allAsync(
-                `SELECT * FROM notifications
-                 WHERE target_audience_type = 'all'
-                    OR (target_audience_type = 'student_id' AND target_audience_identifier = ?)
-                    OR (target_audience_type = 'course_id' AND target_audience_identifier IN (${placeholders}))
-                 ORDER BY created_at DESC`,
-                [studentId, ...enrolledCourseIds]
-            );
-        } else {
-            // Student not enrolled in any course yet
-            notifications = await db.allAsync(
-                `SELECT * FROM notifications
-                 WHERE target_audience_type = 'all'
-                    OR (target_audience_type = 'student_id' AND target_audience_identifier = ?)
-                 ORDER BY created_at DESC`,
-                [studentId]
-            );
-        }
-
-        res.render('pages/student/notifications', {
-            title: 'My Notifications',
-            student: req.student,
-            notifications
-        });
-
-    } catch (err) {
-        console.error("Error fetching student notifications:", err);
-        req.flash('error_msg', 'Could not retrieve your notifications at this time.');
-        res.redirect('/student/dashboard');
-    }
-};
-
-const listMyStudyResources = async (req, res) => {
-    const studentId = req.student.id;
-    try {
-        // Fetch student's enrolled course IDs
-        const enrolledCourses = await db.allAsync(
-            "SELECT course_id FROM enrollments WHERE student_id = ?",
-            [studentId]
-        );
-        const enrolledCourseIds = enrolledCourses.map(ec => ec.course_id);
-
-        let resources = [];
-        // Base query for general resources (no course_id)
-        let query = `
-            SELECT sr.*, NULL as course_name
-            FROM study_resources sr
-            WHERE sr.course_id IS NULL
-        `;
-        let queryParams = [];
-
-        if (enrolledCourseIds.length > 0) {
-            const placeholders = enrolledCourseIds.map(() => '?').join(',');
-            // Add query for course-specific resources
-            query += `
-                UNION ALL
-                SELECT sr.*, c.name as course_name
-                FROM study_resources sr
-                JOIN courses c ON sr.course_id = c.id
-                WHERE sr.course_id IN (${placeholders})
-            `;
-            queryParams.push(...enrolledCourseIds);
-        }
-        query += " ORDER BY course_name ASC, created_at DESC";
-
-        resources = await db.allAsync(query, queryParams);
-
-        // Group resources by course for easier display (optional)
-        const groupedResources = resources.reduce((acc, resource) => {
-            const courseKey = resource.course_name || 'General Resources';
-            if (!acc[courseKey]) {
-                acc[courseKey] = [];
-            }
-            acc[courseKey].push(resource);
-            return acc;
-        }, {});
-
-        res.render('pages/student/study-resources', {
-            title: 'My Study Resources',
-            student: req.student,
-            // resources, // if not grouping
-            groupedResources // if grouping
-        });
-
-    } catch (err) {
-        console.error("Error fetching student study resources:", err);
-        req.flash('error_msg', 'Could not retrieve study resources at this time.');
-        res.redirect('/student/dashboard');
-    }
-};
-
-
-const viewMyFees = async (req, res) => {
-    const studentId = req.student.id;
-    try {
-        const fees = await db.allAsync(`
-            SELECT description, total_amount, amount_paid, (total_amount - amount_paid) as balance,
-                   payment_date, payment_method, notes, created_at
-            FROM fees
-            WHERE student_id = ?
-            ORDER BY payment_date DESC, created_at DESC
-        `, [studentId]);
-
-        let totalCharged = 0;
-        let totalPaid = 0;
-        fees.forEach(fee => {
-            totalCharged += fee.total_amount || 0;
-            totalPaid += fee.amount_paid || 0;
-        });
-        const overallBalance = totalCharged - totalPaid;
-
-        res.render('pages/student/fees', {
-            title: 'My Fee Statement',
-            student: req.student,
-            fees: fees || [],
-            overallBalance
-        });
-    } catch (err) {
-        console.error("Error fetching student fee records:", err);
-        req.flash('error_msg', 'Could not retrieve your fee statement at this time.');
-        res.redirect('/student/dashboard');
-    }
-};
-
-const viewMyAcademics = async (req, res) => {
-    const studentId = req.student.id; // From authStudent middleware
-
-    try {
-        const student = await db.getAsync("SELECT id, first_name FROM students WHERE id = ?", [studentId]);
-        if (!student) {
-            // Should not happen if authStudent middleware is working correctly
-            req.flash('error_msg', 'Student record not found.');
-            return res.redirect('/student/login');
-        }
-
-        const enrollments = await db.allAsync(`
-            SELECT
-                c.name AS course_name,
-                e.enrollment_date,
-                e.coursework_marks,
-                e.main_exam_marks,
-                ((COALESCE(e.coursework_marks, 0) * 0.3) + (COALESCE(e.main_exam_marks, 0) * 0.7)) AS total_score, -- Calculate total score
-                e.final_grade,
-                e.certificate_issued_at -- For future certificate download link
-            FROM enrollments e
-            JOIN courses c ON e.course_id = c.id
-            WHERE e.student_id = ?
-            ORDER BY c.name
-        `, [studentId]);
-
-        res.render('pages/student/academics', {
-            title: 'My Academic Records',
-            student: req.student, // Pass full student object from middleware for header/navbar consistency
-            enrollments: enrollments || [],
-            PASSING_GRADE: parseInt(process.env.PASSING_GRADE) || 60 // For display if needed
-        });
-
-    } catch (err) {
-        console.error("Error fetching student academic records:", err);
-        req.flash('error_msg', 'Could not retrieve your academic records at this time.');
-        res.redirect('/student/dashboard');
-    }
+    loginStudent, logoutStudent,
+    renderChangePasswordInitialForm, handleChangePasswordInitial,
+    renderCompleteProfileInitialForm, handleCompleteProfileInitial,
+    handleForgotPassword, renderResetPasswordForm, handleResetPassword,
+    viewMyAcademics, viewMyFees, listMyNotifications, listMyStudyResources, viewWifiCredentials,
+    renderMyCertificatesPage, downloadCertificate
 };

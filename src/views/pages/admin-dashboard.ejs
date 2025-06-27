@@ -74,10 +74,21 @@
         <div class="col-md-4 mb-3">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">System Management</h5>
-                    <p class="card-text">Manage backups and view admin action logs.</p>
-                    <a href="#" class="btn btn-secondary disabled">Upload Backup</a>
-                    <a href="#" class="btn btn-info disabled ms-2">View Action Logs</a>
+                    <h5 class="card-title"><i class="fas fa-cogs me-2"></i>System & Site Settings</h5>
+                    <p class="card-text">Manage WiFi, backups, and view admin action logs.</p>
+                    <a href="/admin/settings/wifi" class="btn btn-primary mb-2 d-block">Manage WiFi Settings</a>
+                    <a href="#" class="btn btn-secondary disabled d-block">Upload Backup (Soon)</a>
+                    <a href="/admin/action-logs" class="btn btn-info d-block mt-2">View Action Logs</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-file-alt me-2"></i>Content Management</h5>
+                    <p class="card-text">Manage public downloads and other site content.</p>
+                    <a href="/admin/documents" class="btn btn-primary d-block">Manage Downloads</a>
+                    <!-- <a href="#" class="btn btn-primary disabled d-block mt-2">Manage Gallery (Soon)</a> -->
                 </div>
             </div>
         </div>

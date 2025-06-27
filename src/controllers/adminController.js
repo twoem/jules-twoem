@@ -1,10 +1,9 @@
 const bcrypt = require('bcryptjs');
-const db = require('../config/database'); // SQLite database instance
+const db = require('../config/database');
 const { randomBytes } = require('crypto');
 const { body, validationResult } = require('express-validator');
 
-// --- Helper for logging admin actions ---
-async function logAdminAction(admin_id, action_type, description, target_entity_type, target_entity_id, ip_address) {
+async function logAdminAction(admin_id, action_type, description, target_entity_type, target_entity_id, ip_address) { /* ... Existing ... */
     try {
         await db.runAsync(
             `INSERT INTO action_logs (admin_id, action_type, description, target_entity_type, target_entity_id, ip_address)
@@ -15,15 +14,13 @@ async function logAdminAction(admin_id, action_type, description, target_entity_
         console.error("Failed to log admin action:", logErr);
     }
 }
-
-// --- Student Registration (by Admin) ---
-const renderRegisterStudentForm = (req, res) => { /* ... As previously defined ... */
+const renderRegisterStudentForm = (req, res) => { /* ... Existing ... */
     res.render('pages/admin/register-student', {
         title: 'Register New Student',
         admin: req.admin, firstName: '', email: '',
     });
 };
-const registerStudent = async (req, res) => { /* ... As previously defined ... */
+const registerStudent = async (req, res) => { /* ... Existing ... */
     const { firstName, email } = req.body;
     const admin = req.admin;
     let errors = [];
@@ -65,9 +62,7 @@ const registerStudent = async (req, res) => { /* ... As previously defined ... *
         res.redirect('/admin/register-student');
     }
 };
-
-// --- Course Management ---
-const listCourses = async (req, res) => { /* ... As previously defined ... */
+const listCourses = async (req, res) => { /* ... Existing ... */
     try {
         const courses = await db.allAsync("SELECT * FROM courses ORDER BY created_at DESC");
         res.render('pages/admin/courses/index', {
@@ -79,12 +74,12 @@ const listCourses = async (req, res) => { /* ... As previously defined ... */
         res.redirect('/admin/dashboard');
     }
 };
-const renderAddCourseForm = (req, res) => { /* ... As previously defined ... */
+const renderAddCourseForm = (req, res) => { /* ... Existing ... */
     res.render('pages/admin/courses/add', {
         title: 'Add New Course', admin: req.admin, errors: [], name: '', description: ''
     });
 };
-const addCourse = [ /* ... As previously defined ... */
+const addCourse = [ /* ... Existing ... */
     body('name').trim().notEmpty().withMessage('Course name is required.').isLength({ min: 3 }).withMessage('Course name must be at least 3 characters long.'),
     body('description').trim().optional({ checkFalsy: true }),
     async (req, res) => {
@@ -105,7 +100,7 @@ const addCourse = [ /* ... As previously defined ... */
         }
     }
 ];
-const renderEditCourseForm = async (req, res) => { /* ... As previously defined ... */
+const renderEditCourseForm = async (req, res) => { /* ... Existing ... */
     const courseId = req.params.id;
     try {
         const course = await db.getAsync("SELECT * FROM courses WHERE id = ?", [courseId]);
@@ -120,7 +115,7 @@ const renderEditCourseForm = async (req, res) => { /* ... As previously defined 
         res.redirect('/admin/courses');
     }
 };
-const updateCourse = [ /* ... As previously defined ... */
+const updateCourse = [ /* ... Existing ... */
     body('name').trim().notEmpty().withMessage('Course name is required.').isLength({ min: 3 }).withMessage('Course name must be at least 3 characters long.'),
     body('description').trim().optional({ checkFalsy: true }),
     async (req, res) => {
@@ -146,7 +141,7 @@ const updateCourse = [ /* ... As previously defined ... */
         }
     }
 ];
-const deleteCourse = async (req, res) => { /* ... As previously defined ... */
+const deleteCourse = async (req, res) => { /* ... Existing ... */
     const courseId = req.params.id;
     try {
         const enrollment = await db.getAsync("SELECT COUNT(id) as count FROM enrollments WHERE course_id = ?", [courseId]);
@@ -167,9 +162,7 @@ const deleteCourse = async (req, res) => { /* ... As previously defined ... */
         res.redirect('/admin/courses');
     }
 };
-
-// --- Student Management (by Admin) ---
-const listStudents = async (req, res) => { /* ... As previously defined ... */
+const listStudents = async (req, res) => { /* ... Existing ... */
     try {
         const students = await db.allAsync("SELECT id, registration_number, first_name, email, created_at, last_login_at, is_active FROM students ORDER BY created_at DESC");
         res.render('pages/admin/students/index', { title: 'Manage Students', admin: req.admin, students });
@@ -179,7 +172,7 @@ const listStudents = async (req, res) => { /* ... As previously defined ... */
         res.redirect('/admin/dashboard');
     }
 };
-const viewStudentDetails = async (req, res) => { /* ... As previously defined ... */
+const viewStudentDetails = async (req, res) => { /* ... Existing ... */
     const studentId = req.params.id;
     try {
         const student = await db.getAsync("SELECT * FROM students WHERE id = ?", [studentId]);
@@ -199,7 +192,7 @@ const viewStudentDetails = async (req, res) => { /* ... As previously defined ..
         res.redirect('/admin/students');
     }
 };
-const renderEditStudentForm = async (req, res) => { /* ... As previously defined ... */
+const renderEditStudentForm = async (req, res) => { /* ... Existing ... */
     const studentId = req.params.id;
     try {
         const student = await db.getAsync("SELECT * FROM students WHERE id = ?", [studentId]);
@@ -214,7 +207,7 @@ const renderEditStudentForm = async (req, res) => { /* ... As previously defined
         res.redirect('/admin/students');
     }
 };
-const updateStudent = [ /* ... As previously defined ... */
+const updateStudent = [ /* ... Existing ... */
     body('firstName').trim().notEmpty().withMessage('First name is required.'),
     body('email').trim().isEmail().withMessage('Valid email is required.'),
     async (req, res) => {
@@ -247,7 +240,7 @@ const updateStudent = [ /* ... As previously defined ... */
         }
     }
 ];
-const toggleStudentStatus = async (req, res) => { /* ... As previously defined ... */
+const toggleStudentStatus = async (req, res) => { /* ... Existing ... */
     const studentId = req.params.id;
     try {
         const student = await db.getAsync("SELECT id, first_name, is_active FROM students WHERE id = ?", [studentId]);
@@ -267,9 +260,7 @@ const toggleStudentStatus = async (req, res) => { /* ... As previously defined .
         res.redirect('/admin/students');
     }
 };
-
-// --- Course Enrollment Management (by Admin) ---
-const renderManageStudentEnrollments = async (req, res) => { /* ... As previously defined ... */
+const renderManageStudentEnrollments = async (req, res) => { /* ... Existing ... */
     const studentId = req.params.studentId;
     try {
         const student = await db.getAsync("SELECT id, first_name, registration_number FROM students WHERE id = ?", [studentId]);
@@ -283,7 +274,7 @@ const renderManageStudentEnrollments = async (req, res) => { /* ... As previousl
         res.redirect(`/admin/students/view/${studentId}`);
     }
 };
-const enrollStudentInCourse = async (req, res) => { /* ... As previously defined ... */
+const enrollStudentInCourse = async (req, res) => { /* ... Existing ... */
     const studentId = req.params.studentId;
     const { courseId } = req.body;
     if (!courseId) { req.flash('error_msg', 'Please select a course to enroll.'); return res.redirect(`/admin/students/${studentId}/enrollments`);}
@@ -304,7 +295,7 @@ const enrollStudentInCourse = async (req, res) => { /* ... As previously defined
         res.redirect(`/admin/students/${studentId}/enrollments`);
     }
 };
-const removeStudentFromCourse = async (req, res) => { /* ... As previously defined ... */
+const removeStudentFromCourse = async (req, res) => { /* ... Existing ... */
     const enrollmentId = req.params.enrollmentId;
     const studentId = req.body.studentId;
     if (!studentId) { req.flash('error_msg', 'Student identifier missing.'); return res.redirect('/admin/students'); }
@@ -321,9 +312,7 @@ const removeStudentFromCourse = async (req, res) => { /* ... As previously defin
         res.redirect(`/admin/students/${studentId}/enrollments`);
     }
 };
-
-// --- Academic Records Management (by Admin) ---
-const renderEnterMarksForm = async (req, res) => { /* ... As previously defined ... */
+const renderEnterMarksForm = async (req, res) => { /* ... Existing ... */
     const enrollmentId = req.params.enrollmentId;
     try {
         const enrollment = await db.getAsync("SELECT * FROM enrollments WHERE id = ?", [enrollmentId]);
@@ -340,7 +329,7 @@ const renderEnterMarksForm = async (req, res) => { /* ... As previously defined 
         res.redirect('/admin/students');
     }
 };
-const saveMarks = [ /* ... As previously defined ... */
+const saveMarks = [ /* ... Existing ... */
     body('coursework_marks').optional({ checkFalsy: true }).isInt({ min: 0, max: 100 }).withMessage('Coursework marks must be between 0 and 100.'),
     body('main_exam_marks').optional({ checkFalsy: true }).isInt({ min: 0, max: 100 }).withMessage('Main exam marks must be between 0 and 100.'),
     async (req, res) => {
@@ -377,9 +366,7 @@ const saveMarks = [ /* ... As previously defined ... */
         }
     }
 ];
-
-// --- Fee Management (by Admin) ---
-const renderLogFeeForm = async (req, res) => { /* ... As previously defined ... */
+const renderLogFeeForm = async (req, res) => { /* ... Existing ... */
     const studentId = req.params.studentId;
     try {
         const student = await db.getAsync("SELECT id, first_name, registration_number FROM students WHERE id = ?", [studentId]);
@@ -391,7 +378,7 @@ const renderLogFeeForm = async (req, res) => { /* ... As previously defined ... 
         res.redirect('/admin/students');
     }
 };
-const saveFeeEntry = [ /* ... As previously defined ... */
+const saveFeeEntry = [ /* ... Existing ... */
     body('description').trim().notEmpty().withMessage('Description is required.'),
     body('total_amount').isFloat({ min: 0 }).withMessage('Charge amount must be a valid number (0 or more).'),
     body('amount_paid').isFloat({ min: 0 }).withMessage('Payment amount must be a valid number (0 or more).'),
@@ -423,9 +410,7 @@ const saveFeeEntry = [ /* ... As previously defined ... */
         }
     }
 ];
-
-// --- Notification Management (by Admin) ---
-const listNotifications = async (req, res) => { /* ... As previously defined ... */
+const listNotifications = async (req, res) => { /* ... Existing ... */
     try {
         const notifications = await db.allAsync("SELECT * FROM notifications ORDER BY created_at DESC");
         res.render('pages/admin/notifications/index', {
@@ -437,7 +422,7 @@ const listNotifications = async (req, res) => { /* ... As previously defined ...
         res.redirect('/admin/dashboard');
     }
 };
-const renderCreateNotificationForm = async (req, res) => { /* ... As previously defined ... */
+const renderCreateNotificationForm = async (req, res) => { /* ... Existing ... */
     let students = [], courses = [];
     try {
         students = await db.allAsync("SELECT id, first_name, registration_number FROM students WHERE is_active = TRUE ORDER BY first_name");
@@ -445,12 +430,12 @@ const renderCreateNotificationForm = async (req, res) => { /* ... As previously 
     } catch (err) { console.error("Error fetching students/courses for notification form:", err); }
     res.render('pages/admin/notifications/form', {
         title: 'Create Notification', admin: req.admin, errors: [],
-        title_val: '', message_val: '', target_audience_type: 'all', target_audience_identifier: '', // Renamed for clarity in form
+        title_val: '', message_val: '', target_audience_type: 'all',
         students, courses,
         target_audience_identifier_student: '', target_audience_identifier_course: ''
     });
 };
-const createNotification = [ /* ... As previously defined ... */
+const createNotification = [ /* ... Existing ... */
     body('title').trim().notEmpty().withMessage('Title is required.'),
     body('message').trim().notEmpty().withMessage('Message is required.'),
     body('target_audience_type').isIn(['all', 'student_id', 'course_id']).withMessage('Invalid target audience type.'),
@@ -481,7 +466,7 @@ const createNotification = [ /* ... As previously defined ... */
         }
     }
 ];
-const deleteNotification = async (req, res) => { /* ... As previously defined ... */
+const deleteNotification = async (req, res) => { /* ... Existing ... */
     const notificationId = req.params.id;
     try {
         const result = await db.runAsync("DELETE FROM notifications WHERE id = ?", [notificationId]);
@@ -497,9 +482,7 @@ const deleteNotification = async (req, res) => { /* ... As previously defined ..
         res.redirect('/admin/notifications');
     }
 };
-
-// --- Study Resource Management (by Admin) ---
-const listResources = async (req, res) => {
+const listResources = async (req, res) => { /* ... Existing ... */
     try {
         const resources = await db.allAsync(`
             SELECT sr.*, c.name as course_name
@@ -516,8 +499,7 @@ const listResources = async (req, res) => {
         res.redirect('/admin/dashboard');
     }
 };
-
-const renderCreateResourceForm = async (req, res) => {
+const renderCreateResourceForm = async (req, res) => { /* ... Existing ... */
     try {
         const courses = await db.allAsync("SELECT id, name FROM courses ORDER BY name");
         res.render('pages/admin/resources/add', {
@@ -530,17 +512,14 @@ const renderCreateResourceForm = async (req, res) => {
         res.redirect('/admin/study-resources');
     }
 };
-
-const createResource = [
+const createResource = [ /* ... Existing ... */
     body('title').trim().notEmpty().withMessage('Resource title is required.'),
     body('resource_url').trim().notEmpty().withMessage('Resource URL is required.').isURL().withMessage('Must be a valid URL.'),
     body('description').trim().optional({ checkFalsy: true }),
     body('course_id').trim().optional({ checkFalsy: true }).isInt().withMessage('Invalid course selection.'),
-
     async (req, res) => {
         const errors = validationResult(req);
         const { title, description, resource_url, course_id } = req.body;
-
         if (!errors.isEmpty()) {
             const courses = await db.allAsync("SELECT id, name FROM courses ORDER BY name").catch(() => []);
             return res.status(400).render('pages/admin/resources/add', {
@@ -548,19 +527,13 @@ const createResource = [
                 title_val: title, description_val: description, resource_url_val: resource_url, course_id_val: course_id
             });
         }
-
         try {
             const finalCourseId = course_id ? parseInt(course_id, 10) : null;
             if (finalCourseId) {
                 const courseExists = await db.getAsync("SELECT id FROM courses WHERE id = ?", [finalCourseId]);
                 if (!courseExists) throw new Error('Selected course not found.');
             }
-
-            const result = await db.runAsync(
-                `INSERT INTO study_resources (title, description, resource_url, course_id, uploaded_by_admin_id, updated_at)
-                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-                [title, description, resource_url, finalCourseId, req.admin.id]
-            );
+            const result = await db.runAsync( `INSERT INTO study_resources (title, description, resource_url, course_id, uploaded_by_admin_id, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`, [title, description, resource_url, finalCourseId, req.admin.id] );
             logAdminAction(req.admin.id, 'RESOURCE_CREATED', `Admin ${req.admin.name} created study resource: ${title}`, 'study_resource', result.lastID, req.ip);
             req.flash('success_msg', 'Study resource added successfully.');
             res.redirect('/admin/study-resources');
@@ -576,8 +549,7 @@ const createResource = [
         }
     }
 ];
-
-const renderEditResourceForm = async (req, res) => {
+const renderEditResourceForm = async (req, res) => { /* ... Existing ... */
     const resourceId = req.params.id;
     try {
         const resource = await db.getAsync("SELECT * FROM study_resources WHERE id = ?", [resourceId]);
@@ -595,18 +567,15 @@ const renderEditResourceForm = async (req, res) => {
         res.redirect('/admin/study-resources');
     }
 };
-
-const updateResource = [
+const updateResource = [ /* ... Existing ... */
     body('title').trim().notEmpty().withMessage('Resource title is required.'),
     body('resource_url').trim().notEmpty().withMessage('Resource URL is required.').isURL().withMessage('Must be a valid URL.'),
     body('description').trim().optional({ checkFalsy: true }),
     body('course_id').trim().optional({ checkFalsy: true }).isInt().withMessage('Invalid course selection.'),
-
     async (req, res) => {
         const resourceId = req.params.id;
         const errors = validationResult(req);
         const { title, description, resource_url, course_id } = req.body;
-
         if (!errors.isEmpty()) {
             const resource = await db.getAsync("SELECT * FROM study_resources WHERE id = ?", [resourceId]).catch(() => null);
             const courses = await db.allAsync("SELECT id, name FROM courses ORDER BY name").catch(() => []);
@@ -616,19 +585,13 @@ const updateResource = [
                 courses, errors: errors.array(),
             });
         }
-
         try {
             const finalCourseId = course_id ? parseInt(course_id, 10) : null;
              if (finalCourseId) {
                 const courseExists = await db.getAsync("SELECT id FROM courses WHERE id = ?", [finalCourseId]);
                 if (!courseExists) throw new Error('Selected course not found.');
             }
-
-            const result = await db.runAsync(
-                `UPDATE study_resources SET title = ?, description = ?, resource_url = ?, course_id = ?,
-                 uploaded_by_admin_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-                [title, description, resource_url, finalCourseId, req.admin.id, resourceId]
-            );
+            const result = await db.runAsync( `UPDATE study_resources SET title = ?, description = ?, resource_url = ?, course_id = ?, uploaded_by_admin_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [title, description, resource_url, finalCourseId, req.admin.id, resourceId] );
             if (result.changes === 0) {
                 req.flash('error_msg', 'Study resource not found or no changes made.');
             } else {
@@ -643,8 +606,7 @@ const updateResource = [
         }
     }
 ];
-
-const deleteResource = async (req, res) => {
+const deleteResource = async (req, res) => { /* ... Existing ... */
     const resourceId = req.params.id;
     try {
         const result = await db.runAsync("DELETE FROM study_resources WHERE id = ?", [resourceId]);
@@ -661,22 +623,181 @@ const deleteResource = async (req, res) => {
         res.redirect('/admin/study-resources');
     }
 };
+const renderWifiSettingsForm = async (req, res) => { /* ... Existing ... */
+    try {
+        const settingKeys = ['wifi_ssid', 'wifi_password_plaintext', 'wifi_disclaimer'];
+        const settingsData = await db.allAsync("SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN (?,?,?)", settingKeys);
+        const settings = {};
+        settingsData.forEach(row => { settings[row.setting_key] = row.setting_value; });
+        res.render('pages/admin/settings/wifi', { title: 'WiFi Settings Management', admin: req.admin, settings, errors: [] });
+    } catch (err) {
+        console.error("Error fetching wifi settings:", err);
+        req.flash('error_msg', 'Failed to load WiFi settings.');
+        res.redirect('/admin/dashboard');
+    }
+};
+const updateWifiSettings = [ /* ... Existing ... */
+    body('wifi_ssid').trim().notEmpty().withMessage('WiFi SSID is required.'),
+    body('wifi_password').trim().optional({checkFalsy: true}).isLength({min:8}).withMessage('New WiFi password must be at least 8 characters if provided.'),
+    body('wifi_disclaimer').trim().optional({checkFalsy: true}),
+    async (req, res) => {
+        const errors = validationResult(req);
+        const { wifi_ssid, wifi_password, wifi_disclaimer } = req.body;
+        if (!errors.isEmpty()) {
+            const settingKeys = ['wifi_ssid', 'wifi_password_plaintext', 'wifi_disclaimer'];
+            const settingsData = await db.allAsync("SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN (?,?,?)", settingKeys).catch(() => []);
+            const currentSettings = {};
+            settingsData.forEach(row => { currentSettings[row.setting_key] = row.setting_value; });
+            return res.status(400).render('pages/admin/settings/wifi', { title: 'WiFi Settings Management', admin: req.admin, settings: { wifi_ssid, wifi_disclaimer }, errors: errors.array() }); // Pass current settings for form, not submitted ones
+        }
+        try {
+            const upsertSetting = (key, value, desc, adminId) => db.runAsync( `INSERT INTO site_settings (setting_key, setting_value, description, updated_by_admin_id, updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_by_admin_id = excluded.updated_by_admin_id, updated_at = CURRENT_TIMESTAMP`, [key, value, desc, adminId] );
+            const updates = [];
+            let updatedSettingsForLog = [];
+            updates.push(upsertSetting('wifi_ssid', wifi_ssid, 'WiFi Network Name (SSID)', req.admin.id));
+            updatedSettingsForLog.push('SSID');
+            if (wifi_password) {
+                updates.push(upsertSetting('wifi_password_plaintext', wifi_password, 'Plaintext WiFi Password (for student view)', req.admin.id));
+                updatedSettingsForLog.push('Password');
+            }
+            updates.push(upsertSetting('wifi_disclaimer', wifi_disclaimer || '', 'WiFi Usage Disclaimer', req.admin.id));
+            if (wifi_disclaimer || wifi_disclaimer === '') updatedSettingsForLog.push('Disclaimer'); // Log if it was explicitly set (even to empty)
+            await Promise.all(updates);
+            logAdminAction(req.admin.id, 'WIFI_SETTINGS_UPDATED', `Admin ${req.admin.name} updated WiFi settings: ${updatedSettingsForLog.join(', ')}`, 'site_settings', null, req.ip);
+            req.flash('success_msg', 'WiFi settings updated successfully.');
+            res.redirect('/admin/settings/wifi');
+        } catch (err) {
+            console.error("Error updating WiFi settings:", err);
+            req.flash('error_msg', 'Failed to update WiFi settings. ' + err.message);
+            res.redirect('/admin/settings/wifi');
+        }
+    }
+];
+const listDownloadableDocuments = async (req, res) => { /* ... Existing ... */
+    try {
+        const documents = await db.allAsync("SELECT * FROM downloadable_documents ORDER BY created_at DESC");
+        res.render('pages/admin/documents/index', {
+            title: 'Manage Downloadable Documents', admin: req.admin, documents
+        });
+    } catch (err) {
+        console.error("Error fetching downloadable documents:", err);
+        req.flash('error_msg', 'Failed to load document list.');
+        res.redirect('/admin/dashboard');
+    }
+};
+const renderCreateDocumentForm = (req, res) => { /* ... Existing ... */
+    res.render('pages/admin/documents/add', {
+        title: 'Add Downloadable Document', admin: req.admin, errors: [],
+        title_val: '', description_val: '', file_url_val: '', type_val: 'public', expiry_date_val: ''
+    });
+};
+const createDocument = [ /* ... Existing ... */
+    body('title').trim().notEmpty().withMessage('Document title is required.'),
+    body('file_url').trim().notEmpty().withMessage('File URL is required.').isURL().withMessage('Must be a valid URL.'),
+    body('type').isIn(['public', 'eulogy']).withMessage('Invalid document type.'),
+    body('description').trim().optional({ checkFalsy: true }),
+    body('expiry_date').optional({ checkFalsy: true }).isISO8601().toDate().withMessage('Invalid expiry date format.'),
+    async (req, res) => {
+        const errors = validationResult(req);
+        let { title, description, file_url, type, expiry_date } = req.body;
+        if (!errors.isEmpty()) {
+            return res.status(400).render('pages/admin/documents/add', { title: 'Add Downloadable Document', admin: req.admin, errors: errors.array(), title_val: title, description_val: description, file_url_val: file_url, type_val: type, expiry_date_val: expiry_date });
+        }
+        if (type === 'public') expiry_date = null;
+        else if (type === 'eulogy' && !expiry_date) { let defaultExpiry = new Date(); defaultExpiry.setDate(defaultExpiry.getDate() + 7); expiry_date = defaultExpiry.toISOString().split('T')[0]; }
+        try {
+            const result = await db.runAsync( `INSERT INTO downloadable_documents (title, description, file_url, type, expiry_date, uploaded_by_admin_id, created_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`, [title, description, file_url, type, expiry_date, req.admin.id] );
+            logAdminAction(req.admin.id, 'DOCUMENT_CREATED', `Admin ${req.admin.name} added document: ${title}`, 'downloadable_document', result.lastID, req.ip);
+            req.flash('success_msg', 'Document entry added successfully.');
+            res.redirect('/admin/documents');
+        } catch (err) {
+            console.error("Error adding document entry:", err); req.flash('error_msg', 'Failed to add document entry. ' + err.message);
+            res.status(500).render('pages/admin/documents/add', { title: 'Add Downloadable Document', admin: req.admin, errors: [{msg: 'Failed to add document entry. ' + err.message}], title_val: title, description_val: description, file_url_val: file_url, type_val: type, expiry_date_val: expiry_date });
+        }
+    }
+];
+const renderEditDocumentForm = async (req, res) => { /* ... Existing ... */
+    const docId = req.params.id;
+    try {
+        const document = await db.getAsync("SELECT * FROM downloadable_documents WHERE id = ?", [docId]);
+        if (!document) { req.flash('error_msg', 'Document entry not found.'); return res.redirect('/admin/documents');}
+        if (document.expiry_date) document.expiry_date_formatted = new Date(document.expiry_date).toISOString().split('T')[0];
+        res.render('pages/admin/documents/edit', { title: 'Edit Downloadable Document', admin: req.admin, document, errors: [] });
+    } catch (err) {
+        console.error("Error fetching document for edit:", err);
+        req.flash('error_msg', 'Failed to load document details for editing.');
+        res.redirect('/admin/documents');
+    }
+};
+const updateDocument = [ /* ... Existing ... */
+    body('title').trim().notEmpty().withMessage('Document title is required.'),
+    body('file_url').trim().notEmpty().withMessage('File URL is required.').isURL().withMessage('Must be a valid URL.'),
+    body('type').isIn(['public', 'eulogy']).withMessage('Invalid document type.'),
+    body('description').trim().optional({ checkFalsy: true }),
+    body('expiry_date').optional({ checkFalsy: true }).isISO8601().toDate().withMessage('Invalid expiry date format.'),
+    async (req, res) => {
+        const docId = req.params.id;
+        const errors = validationResult(req);
+        let { title, description, file_url, type, expiry_date } = req.body;
+        if (!errors.isEmpty()) {
+            const documentToReRender = await db.getAsync("SELECT * FROM downloadable_documents WHERE id = ?", [docId]).catch(()=> ({id: docId}));
+             if (documentToReRender && documentToReRender.expiry_date) documentToReRender.expiry_date_formatted = new Date(documentToReRender.expiry_date).toISOString().split('T')[0];
+            return res.status(400).render('pages/admin/documents/edit', { title: 'Edit Downloadable Document', admin: req.admin, document: { ...documentToReRender, title, description, file_url, type, expiry_date_formatted: expiry_date }, errors: errors.array() });
+        }
+        if (type === 'public') expiry_date = null;
+        else if (type === 'eulogy' && !expiry_date) expiry_date = null;
+        try {
+            const result = await db.runAsync( `UPDATE downloadable_documents SET title = ?, description = ?, file_url = ?, type = ?, expiry_date = ?, uploaded_by_admin_id = ? WHERE id = ?`, [title, description, file_url, type, expiry_date, req.admin.id, docId] );
+            if (result.changes === 0) req.flash('error_msg', 'Document entry not found or no changes made.');
+            else { logAdminAction(req.admin.id, 'DOCUMENT_UPDATED', `Admin ${req.admin.name} updated document: ${title}`, 'downloadable_document', docId, req.ip); req.flash('success_msg', 'Document entry updated successfully.'); }
+            res.redirect('/admin/documents');
+        } catch (err) {
+            console.error("Error updating document entry:", err);
+            req.flash('error_msg', 'Failed to update document entry. ' + err.message);
+            res.redirect(`/admin/documents/edit/${docId}`);
+        }
+    }
+];
+const deleteDocument = async (req, res) => { /* ... Existing ... */
+    const docId = req.params.id;
+    try {
+        const result = await db.runAsync("DELETE FROM downloadable_documents WHERE id = ?", [docId]);
+        if (result.changes === 0) req.flash('error_msg', 'Document entry not found.');
+        else { logAdminAction(req.admin.id, 'DOCUMENT_DELETED', `Admin ${req.admin.name} deleted document entry ID: ${docId}`, 'downloadable_document', docId, req.ip); req.flash('success_msg', 'Document entry deleted successfully.');}
+        res.redirect('/admin/documents');
+    } catch (err) {
+        console.error("Error deleting document entry:", err);
+        req.flash('error_msg', 'Failed to delete document entry. ' + err.message);
+        res.redirect('/admin/documents');
+    }
+};
 
+// --- View Action Logs (Admin) ---
+const viewActionLogs = async (req, res) => {
+    try {
+        const logs = await db.allAsync("SELECT * FROM action_logs ORDER BY created_at DESC LIMIT 100"); // Limit for now
+        res.render('pages/admin/action-logs', {
+            title: 'Admin Action Logs',
+            admin: req.admin,
+            logs
+        });
+    } catch (err) {
+        console.error("Error fetching action logs:", err);
+        req.flash('error_msg', 'Failed to load action logs.');
+        res.redirect('/admin/dashboard');
+    }
+};
 
 module.exports = {
     renderRegisterStudentForm, registerStudent,
-    // Course Management
     listCourses, renderAddCourseForm, addCourse, renderEditCourseForm, updateCourse, deleteCourse,
-    // Student Management
     listStudents, viewStudentDetails, renderEditStudentForm, updateStudent, toggleStudentStatus,
-    // Enrollment Management
     renderManageStudentEnrollments, enrollStudentInCourse, removeStudentFromCourse,
-    // Academics Management
     renderEnterMarksForm, saveMarks,
-    // Fee Management
     renderLogFeeForm, saveFeeEntry,
-    // Notification Management
     listNotifications, renderCreateNotificationForm, createNotification, deleteNotification,
-    // Study Resource Management
-    listResources, renderCreateResourceForm, createResource, renderEditResourceForm, updateResource, deleteResource
+    listResources, renderCreateResourceForm, createResource, renderEditResourceForm, updateResource, deleteResource,
+    renderWifiSettingsForm, updateWifiSettings,
+    listDownloadableDocuments, renderCreateDocumentForm, createDocument, renderEditDocumentForm, updateDocument, deleteDocument,
+    viewActionLogs
 };

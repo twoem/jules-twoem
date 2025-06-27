@@ -9,37 +9,60 @@
 
             <h3 class="mt-5">Public Documents</h3>
             <p>Curriculum guides, forms, and other general information.</p>
-            <div class="list-group mb-4">
-                <!-- Example Item (to be replaced with dynamic data or hardcoded links later) -->
-                <a href="#" class="list-group-item list-group-item-action disabled">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">Sample Public Document 1</h5>
-                        <small>PDF, 2MB</small>
-                    </div>
-                    <p class="mb-1">A brief description of the document content goes here.</p>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action disabled">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">Sample Public Document 2</h5>
-                        <small>DOCX, 500KB</small>
-                    </div>
-                    <p class="mb-1">Another useful public resource description.</p>
-                </a>
-            </div>
+            <p class="lead">Find public documents and other resources available for download.</p>
 
-            <h3 class="mt-5">Eulogy Documents</h3>
-            <p>These documents are available for a limited time (typically 7 days from upload).</p>
-            <div class="list-group">
-                <!-- Example Item (to be replaced with dynamic data or hardcoded links later) -->
-                 <a href="#" class="list-group-item list-group-item-action disabled">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">Eulogy Sample 1 (Expires Soon)</h5>
-                        <small class="text-danger">Expires in 2 days</small>
-                    </div>
-                    <p class="mb-1">Description for the eulogy document.</p>
-                </a>
-                <p class="text-muted mt-2">No eulogy documents currently available or content will be populated here.</p>
-            </div>
+            <%- include('../partials/flash-messages') %> <% /* For error_msg from controller */ %>
+
+            <h3 class="mt-5"><i class="fas fa-file-alt text-primary me-2"></i>Public Documents</h3>
+            <% if (publicDocs && publicDocs.length > 0) { %>
+                <div class="list-group mb-4 shadow-sm">
+                    <% publicDocs.forEach(function(doc) { %>
+                        <a href="<%= doc.file_url %>" class="list-group-item list-group-item-action" target="_blank" rel="noopener noreferrer">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1"><%= doc.title %></h5>
+                                <small class="text-muted"><%= new Date(doc.created_at).toLocaleDateString() %></small>
+                            </div>
+                            <% if (doc.description) { %><p class="mb-1 text-muted small"><%= doc.description %></p><% } %>
+                            <small class="text-primary"><i class="fas fa-link me-1"></i><%= doc.file_url %></small>
+                        </a>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="alert alert-info">No public documents currently available.</div>
+            <% } %>
+
+            <h3 class="mt-5"><i class="fas fa-book-dead text-secondary me-2"></i>Eulogy Documents</h3>
+            <p>These documents are available for a limited time.</p>
+            <% if (eulogyDocs && eulogyDocs.length > 0) { %>
+                <div class="list-group shadow-sm">
+                    <% eulogyDocs.forEach(function(doc) {
+                        let expiryText = '';
+                        let effectiveExpiry;
+                        if (doc.expiry_date) {
+                            effectiveExpiry = new Date(doc.expiry_date);
+                        } else {
+                            effectiveExpiry = new Date(doc.created_at);
+                            effectiveExpiry.setDate(effectiveExpiry.getDate() + 7);
+                        }
+                        const daysRemaining = Math.ceil((effectiveExpiry - new Date()) / (1000 * 60 * 60 * 24));
+                        if (daysRemaining <= 0) expiryText = 'Expired';
+                        else if (daysRemaining === 1) expiryText = 'Expires today';
+                        else if (daysRemaining <= 7) expiryText = `Expires in ${daysRemaining} days`;
+                        else expiryText = `Expires on ${effectiveExpiry.toLocaleDateString()}`;
+                    %>
+                        <a href="<%= doc.file_url %>" class="list-group-item list-group-item-action" target="_blank" rel="noopener noreferrer">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1"><%= doc.title %></h5>
+                                <small class="text-danger"><%= expiryText %></small>
+                            </div>
+                            <% if (doc.description) { %><p class="mb-1 text-muted small"><%= doc.description %></p><% } %>
+                            <small class="text-primary"><i class="fas fa-link me-1"></i><%= doc.file_url %></small>
+                        </a>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="alert alert-info">No eulogy documents currently available.</div>
+            <% } %>
         </div>
     </div>
 </main>
