@@ -1,65 +1,150 @@
 /* Custom CSS for Twoem Online Productions */
 
+:root {
+    --primary-color: #0056b3; /* A strong, professional blue */
+    --primary-hover-color: #004085; /* Darker shade for hover */
+    --secondary-color: #6c757d; /* Bootstrap secondary */
+    --light-bg-color: #f8f9fa; /* Bootstrap light bg */
+    --text-dark: #212529;
+    --text-muted-custom: #5a6268; /* Slightly darker muted text for better readability */
+    --navbar-bg-color: #004085; /* Darker blue for navbar */
+    --navbar-text-color: #ffffff;
+    --navbar-hover-color: #e0e0e0;
+    --navbar-active-border: #ffffff;
+}
+
 body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    /* padding-top: 56px; /* Only use if navbar is fixed-top */
+    color: var(--text-dark);
 }
 
 main {
     flex: 1; /* Allows the main content to grow and push the footer down */
+    padding-top: 1rem; /* Add some padding from navbar if navbar is not fixed */
+    padding-bottom: 2rem;
 }
-
-.navbar-brand img {
-    margin-right: 8px; /* Increased margin slightly */
-    height: 30px; /* Ensure consistent height with text */
-}
-
-/* Add more custom styles as needed */
 
 /* Navbar customisations */
-.navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+.navbar.bg-custom-primary {
+    background-color: var(--navbar-bg-color) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
-.navbar-nav .nav-link {
-    padding-right: 0.75rem;
-    padding-left: 0.75rem;
+.navbar-brand, .navbar-nav .nav-link {
+    color: var(--navbar-text-color) !important;
 }
-
-.navbar-nav .nav-link:hover {
-    color: #0056b3 !important; /* Darker blue on hover, or choose theme color */
+.navbar-brand img {
+    margin-right: 8px;
+    height: 30px;
+    /* border: 1px solid #fff;
+    border-radius: 4px; */
 }
-
+.navbar-nav .nav-link:hover, .navbar-nav .nav-link:focus {
+    color: var(--navbar-hover-color) !important;
+}
 .navbar-nav .nav-link.active {
-    font-weight: 600; /* Slightly bolder for active link */
-    /* color: #0d6efd !important; /* Ensure Bootstrap's primary color is used if not default */
+    font-weight: bold;
+    border-bottom: 2px solid var(--navbar-active-border);
+    padding-bottom: calc(0.5rem - 2px); /* Adjust padding to account for border */
+}
+.navbar-toggler {
+    border-color: rgba(255,255,255,0.5);
+}
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
+/* Button primary update */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    background-color: var(--primary-hover-color);
+    border-color: var(--primary-hover-color);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 {
+    color: var(--primary-color);
+}
+h1.display-5, h1.display-4, h1.display-6 {
+     color: var(--text-dark);
+}
+.page-title { /* Custom class for main page titles if needed */
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+
+/* Card header customisation */
+.card-header {
+    background-color: var(--light-bg-color);
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 500;
+}
+.card-header h4, .card-header h5 { /* Ensure heading color in card headers also uses primary */
+     color: var(--primary-color) !important;
+}
 
 /* Card customisations */
 .card {
-    border-radius: 0.5rem; /* Softer, more modern rounded corners */
-    /* box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); /* Optional: very subtle shadow for cards */
+    border-radius: 0.5rem;
+    border: 1px solid #e0e0e0; /* Softer border for cards */
+    /* box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); */
 }
-
 .card-title {
-    margin-bottom: 0.75rem; /* Standardize card title bottom margin */
+    margin-bottom: 0.75rem;
 }
-
-.card-icon { /* If used, for services etc. */
+.card-icon {
     font-size: 2.5rem;
     margin-bottom: 1rem;
-    color: #0d6efd; /* Bootstrap primary color */
+    color: var(--primary-color);
 }
 
-/* Main page heading consistency */
-h1.display-5, h1.h2, h2.card-title { /* Adjust selectors as needed */
-    /* color: #333; /* Slightly softer black for text if desired */
+
+/* Links */
+a {
+    color: var(--primary-color);
+    text-decoration: none; /* Remove underline by default, add on hover if desired */
+}
+a:hover {
+    color: var(--primary-hover-color);
+    text-decoration: underline;
 }
 
-/* Button consistency */
-.btn {
-    border-radius: 0.3rem; /* Slightly softer button corners */
+/* Text muted */
+.text-muted {
+    color: var(--text-muted-custom) !important;
+}
+.breadcrumb-item.active {
+    color: var(--text-muted-custom);
+}
+
+/* Footer */
+footer.bg-light {
+    background-color: var(--light-bg-color) !important;
+    border-top: 1px solid #ddd;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+footer .text-center {
+    background-color: transparent !important; /* Remove darker bg from inner div */
+}
+
+/* Alert styling for flash messages */
+.alert {
+    border-radius: 0.3rem;
+}
+
+/* Form control focus */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(0, 86, 179, 0.25); /* Primary color with opacity */
+}
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(0, 86, 179, 0.25);
 }

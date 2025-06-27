@@ -1,28 +1,77 @@
 <%- include('../partials/header', { title: 'Home' }) %>
 <%- include('../partials/navbar') %>
 
+<!-- Hero Section -->
+<div class="container-fluid px-0">
+    <div style="background: url('/images/home/hero-placeholder.jpg') no-repeat center center; background-size: cover; height: 60vh; display: flex; align-items: center; justify-content: center; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+        <div class="text-center">
+            <h1 class="display-3 fw-bold">Twoem Online Productions</h1>
+            <p class="lead fs-3 col-lg-8 mx-auto">Your Trusted Partner for Digital, Office, Government & Educational Services.</p>
+            <a href="/services" class="btn btn-primary btn-lg mt-3 px-4">Explore Our Services</a>
+            <a href="/contact" class="btn btn-outline-light btn-lg mt-3 px-4 ms-2">Contact Us</a>
+        </div>
+    </div>
+</div>
+
 <main class="container mt-5">
-    <div class="p-5 mb-4 bg-light rounded-3">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold">Welcome to Twoem Online Productions</h1>
-            <p class="col-md-8 fs-4">Your one-stop shop for digital services, government service assistance, computer education, and much more.</p>
-            <a href="/services" class="btn btn-primary btn-lg" type="button">Explore Our Services</a>
+    <div class="row text-center mb-5">
+        <div class="col-lg-10 mx-auto">
+            <h2 class="page-title">Welcome to Twoem Online</h2>
+            <p class="lead text-muted">
+                At Twoem Online Productions, we are dedicated to providing top-notch services to empower our community.
+                From essential digital printing and office support to navigating government services and offering quality computer education,
+                we are your one-stop solution. Our commitment is to deliver excellence and convenience, ensuring your needs are met with professionalism and care.
+            </p>
         </div>
     </div>
 
-    <div class="row align-items-md-stretch">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="card-icon mb-3"><i class="fas fa-print fa-2x"></i></div>
+                    <h5 class="card-title">Digital & Printing</h5>
+                    <p class="card-text small text-muted">High-quality printing, binding, lamination, business cards, and more for all your personal and professional needs.</p>
+                    <a href="/services#digital-printing" class="btn btn-sm btn-outline-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="card-icon mb-3"><i class="fas fa-laptop-code fa-2x"></i></div>
+                    <h5 class="card-title">Computer Education</h5>
+                    <p class="card-text small text-muted">Empowering you with essential computer skills through our comprehensive training programs. From basics to MS Office proficiency.</p>
+                     <a href="/services#computer-education" class="btn btn-sm btn-outline-primary">View Courses</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="card-icon mb-3"><i class="fas fa-landmark fa-2x"></i></div>
+                    <h5 class="card-title">Government Services</h5>
+                    <p class="card-text small text-muted">Expert assistance with eCitizen applications, KRA services, NHIF registration, and other essential government paperwork.</p>
+                    <a href="/services#government-services" class="btn btn-sm btn-outline-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row align-items-md-stretch gx-4 gy-4">
         <div class="col-md-6">
-            <div class="h-100 p-5 text-white bg-dark rounded-3">
-                <h2>Student Portal</h2>
-                <p>Access your course materials, grades, and important announcements. Login to get started.</p>
-                <a href="/student/login" class="btn btn-outline-light" type="button">Go to Student Portal</a>
+            <div class="h-100 p-5 bg-custom-primary text-white rounded-3 shadow">
+                <h2><i class="fas fa-user-graduate me-2"></i>Student Portal</h2>
+                <p>Access your course materials, view academic scores, check fee statements, and stay updated with important announcements. Login to get started with your learning journey.</p>
+                <a href="/student/login" class="btn btn-outline-light btn-lg" type="button">Go to Student Portal</a>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="h-100 p-5 bg-light border rounded-3">
-                <h2>Admin Area</h2>
-                <p>Manage students, courses, website content, and more. Secure admin login required.</p>
-                <a href="/admin/login" class="btn btn-outline-secondary" type="button">Admin Login</a>
+            <div class="h-100 p-5 bg-light border rounded-3 shadow">
+                <h2><i class="fas fa-user-shield me-2"></i>Admin Area</h2>
+                <p>Authorized personnel can manage student records, courses, website content, system settings, and more. Secure admin login required for access.</p>
+                <a href="/admin/login" class="btn btn-outline-secondary btn-lg" type="button">Admin Login</a>
             </div>
         </div>
     </div>

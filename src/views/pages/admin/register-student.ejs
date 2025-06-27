@@ -11,27 +11,16 @@
                     <li class="breadcrumb-item active" aria-current="page">Register New Student</li>
                 </ol>
             </nav>
-
-            <h2>Register New Student</h2>
-            <p>Fill out the form below to register a new student. They will be assigned a unique registration number and a default password.</p>
-
-            <% if (locals.success_msg) { %>
-                <div class="alert alert-success"><%= success_msg %></div>
-            <% } %>
-            <% if (locals.error_msg) { %>
-                <div class="alert alert-danger"><%= error_msg %></div>
-            <% } %>
-            <% if (locals.errors && errors.length > 0) { %>
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        <% errors.forEach(function(error) { %>
-                            <li><%= error.msg || error %></li>
-                        <% }); %>
-                    </ul>
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Register New Student</h2>
                 </div>
-            <% } %>
+                <div class="card-body">
+                    <p>Fill out the form below to register a new student. They will be assigned a unique registration number and a default password.</p>
 
-            <form action="/admin/register-student" method="POST">
+                    <%- include('../../partials/flash-messages') %>
+
+                    <form action="/admin/register-student" method="POST">
                 <div class="mb-3">
                     <label for="firstName" class="form-label">First Name</label>
                     <input type="text" class="form-control" id="firstName" name="firstName" required value="<%= locals.firstName || '' %>">
@@ -53,6 +42,8 @@
                     <button type="submit" class="btn btn-primary">Register Student</button>
                 </div>
             </form>
+                </div> <%# card-body %>
+            </div> <%# card %>
         </div>
     </div>
 </main>

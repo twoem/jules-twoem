@@ -24,15 +24,18 @@ This section will be populated as images are added to specific pages.
 | *(More to be added)*          |                           |                          |                                           |                                           |
 
 
-## Gallery Images (Placeholders)
+## Gallery Images (Placeholders & Themes)
 
-The gallery page (`src/views/pages/gallery.ejs`) currently uses `via.placeholder.com` images directly in the template. As specific gallery images are decided:
+The gallery page (`src/views/pages/gallery.ejs`) uses placeholder images. These should be replaced with actual photos. The current placeholders and their intended themes are:
 
-| Placeholder Description       | Intended Location in Repo   | Title / Tags (Example)                    | Current Placeholder Source / Notes        |
-| ----------------------------- | --------------------------- | ----------------------------------------- | ----------------------------------------- |
-| Gallery Image 1               | `public/images/gallery/`    | "Service Image 1" / Printing, Design      | `https://via.placeholder.com/400x300.png?text=Service+Image+1` |
-| Gallery Image 2               | `public/images/gallery/`    | "Computer Training" / Education, Students | `https://via.placeholder.com/400x300.png?text=Computer+Training` |
-| *(As per gallery.ejs)*        |                             |                                           |                                           |
+| Placeholder URL (Example)                            | Conceptual Theme                   | Title Example                      | Tags Example                             | Notes for Sourcing Real Images (e.g., from Unsplash/Pexels) | Intended Location in Repo |
+| ---------------------------------------------------- | ---------------------------------- | ---------------------------------- | ---------------------------------------- | ----------------------------------------------------------- | ------------------------- |
+| `https://via.placeholder.com/400x300.png?text=Quality+Prints` | Quality Printing                   | Quality Printing Solutions         | Printing, Design, Brochures              | Search for "modern printing", "brochure design", "quality flyers" | `public/images/gallery/`  |
+| `https://via.placeholder.com/400x300.png?text=Computer+Class`  | Computer Education in action       | Empowering Through Education       | Education, Computer Skills, Community    | Search for "computer class Kenya", "adult education technology" | `public/images/gallery/`  |
+| `https://via.placeholder.com/400x300.png?text=Office+Support`  | Office Services / Support          | Efficient Office Services          | Office Support, CV Writing, Productivity | Search for "professional resume", "office assistance"       | `public/images/gallery/`  |
+| `https://via.placeholder.com/400x300.png?text=Fast+Internet`   | Internet Cafe / Connectivity       | Reliable Internet Access           | Internet, WiFi, Connectivity             | Search for "internet cafe", "people using wifi"             | `public/images/gallery/`  |
+| `https://via.placeholder.com/400x300.png?text=Gov+Service+Help`| Government Service Assistance      | Government Service Assistance      | eCitizen, Support, KRA                   | Search for "community support", "online services Kenya"     | `public/images/gallery/`  |
+| `https://via.placeholder.com/400x300.png?text=Twoem+Teamwork`  | Team or Service Interaction        | Dedicated to Our Community         | Team, Service, Twoem                     | Search for "friendly customer service", "local business team" | `public/images/gallery/`  |
 
 ## Icons
 
@@ -54,7 +57,7 @@ The gallery page (`src/views/pages/gallery.ejs`) currently uses `via.placeholder
 
 | Placeholder Description           | Intended Location in Repo     | Page(s) / Section        | Purpose                                       | Current Placeholder Source / Notes        |
 | --------------------------------- | ----------------------------- | ------------------------ | --------------------------------------------- | ----------------------------------------- |
-| Homepage Hero Banner              | `public/images/home/`         | Home                     | Main welcoming visual for homepage            | e.g., `via.placeholder.com/1200x400` or Unsplash search for "community technology center" |
+| Homepage Hero Banner              | `public/images/home/hero-placeholder.jpg` | Home           | Main welcoming visual for homepage            | Generic placeholder. Source from Unsplash/Pexels (e.g., "community technology center", "modern office services") |
 | Service: Digital Printing         | `public/images/services/`     | Services (details page)  | Visual for Digital Printing section/details   | Unsplash search: "printing press", "brochures" |
 | Service: Government Services      | `public/images/services/`     | Services (details page)  | Visual for Government Services section        | Unsplash search: "official document", "government building" |
 | Service: Office Services          | `public/images/services/`     | Services (details page)  | Visual for Office Services section            | Unsplash search: "office work", "typing"  |

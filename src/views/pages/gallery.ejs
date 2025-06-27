@@ -9,59 +9,31 @@
         </div>
     </div>
 
-    <div class="row mt-4">
-        <!-- Placeholder Gallery Items - Replace with actual images and tags -->
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x300.png?text=Service+Image+1" class="card-img-top" alt="Placeholder Image 1">
-                <div class="card-body">
-                    <h5 class="card-title">Digital Printing Sample</h5>
-                    <p class="card-text"><span class="badge bg-primary">Printing</span> <span class="badge bg-secondary">Design</span></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x300.png?text=Computer+Training" class="card-img-top" alt="Placeholder Image 2">
-                <div class="card-body">
-                    <h5 class="card-title">Computer Training Session</h5>
-                    <p class="card-text"><span class="badge bg-success">Education</span> <span class="badge bg-info">Students</span></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x300.png?text=Office+Services" class="card-img-top" alt="Placeholder Image 3">
-                <div class="card-body">
-                    <h5 class="card-title">Professional CV Design</h5>
-                    <p class="card-text"><span class="badge bg-warning text-dark">Office Services</span> <span class="badge bg-dark">CV Writing</span></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x300.png?text=eCitizen+Support" class="card-img-top" alt="Placeholder Image 4">
-                <div class="card-body">
-                    <h5 class="card-title">eCitizen Application Assistance</h5>
-                    <p class="card-text"><span class="badge bg-danger">Government Services</span> <span class="badge bg-light text-dark">eCitizen</span></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x300.png?text=High-Speed+Internet" class="card-img-top" alt="Placeholder Image 5">
-                <div class="card-body">
-                    <h5 class="card-title">Our Internet Cafe Setup</h5>
-                    <p class="card-text"><span class="badge bg-info">Internet Services</span> <span class="badge bg-secondary">WiFi</span></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/400x300.png?text=Community+Event" class="card-img-top" alt="Placeholder Image 6">
-                <div class="card-body">
-                    <h5 class="card-title">Local Community Support</h5>
-                    <p class="card-text"><span class="badge bg-primary">Community</span> <span class="badge bg-success">Events</span></p>
+    <div class="row mt-4 g-4">
+        <%
+        const galleryItems = [
+            { imgUrl: "https://via.placeholder.com/400x300.png?text=Quality+Prints", title: "Quality Printing Solutions", tags: ["Printing", "Design", "Brochures"], description: "Vibrant and professional printing for all your business and personal needs." },
+            { imgUrl: "https://via.placeholder.com/400x300.png?text=Computer+Class", title: "Empowering Through Education", tags: ["Education", "Computer Skills", "Community"], description: "Our students gaining hands-on experience in one of our computer training sessions." },
+            { imgUrl: "https://via.placeholder.com/400x300.png?text=Office+Support", title: "Efficient Office Services", tags: ["Office Support", "CV Writing", "Productivity"], description: "Providing reliable office support services to help you succeed." },
+            { imgUrl: "https://via.placeholder.com/400x300.png?text=Fast+Internet", title: "Reliable Internet Access", tags: ["Internet", "WiFi", "Connectivity"], description: "Stay connected with our high-speed internet and cyber cafe services." },
+            { imgUrl: "https://via.placeholder.com/400x300.png?text=Gov+Service+Help", title: "Government Service Assistance", tags: ["eCitizen", "Support", "KRA"], description: "Simplifying your access to essential government services online." },
+            { imgUrl: "https://via.placeholder.com/400x300.png?text=Twoem+Teamwork", title: "Dedicated to Our Community", tags: ["Team", "Service", "Twoem"], description: "The Twoem Online team is committed to providing excellent service." }
+        ];
+        %>
+
+        <% galleryItems.forEach(function(item) { %>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm gallery-card">
+                    <img src="<%= item.imgUrl %>" class="card-img-top" alt="<%= item.title %>">
+                    <div class="card-body">
+                        <h5 class="card-title"><%= item.title %></h5>
+                        <p class="card-text small text-muted"><%= item.description %></p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <% item.tags.forEach(function(tag) { %>
+                            <span class="badge bg-primary me-1"><%= tag %></span>
+                        <% }); %>
+                    </div>
                 </div>
             </div>
         </div>
