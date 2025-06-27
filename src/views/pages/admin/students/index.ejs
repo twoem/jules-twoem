@@ -38,6 +38,7 @@
                         <th scope="col">Reg. Number</th>
                         <th scope="col">First Name</th>
                         <th scope="col">Email</th>
+                        <th scope="col">Status</th>
                         <th scope="col">Registered At</th>
                         <th scope="col">Last Login</th>
                         <th scope="col" class="text-end">Actions</th>
@@ -50,18 +51,27 @@
                             <td><%= student.registration_number %></td>
                             <td><%= student.first_name %></td>
                             <td><a href="mailto:<%= student.email %>"><%= student.email %></a></td>
+                            <td>
+                                <% if (student.is_active) { %>
+                                    <span class="badge bg-success">Active</span>
+                                <% } else { %>
+                                    <span class="badge bg-danger">Inactive</span>
+                                <% } %>
+                            </td>
                             <td><%= new Date(student.created_at).toLocaleDateString() %></td>
                             <td><%= student.last_login_at ? new Date(student.last_login_at).toLocaleString() : 'Never' %></td>
                             <td class="text-end">
                                 <a href="/admin/students/view/<%= student.id %>" class="btn btn-sm btn-outline-info me-1" title="View Details">
                                     <i class="fas fa-eye"></i> View
                                 </a>
-                                <a href="#" class="btn btn-sm btn-outline-secondary me-1 disabled" title="Edit Student (Soon)">
+                                <a href="/admin/students/edit/<%= student.id %>" class="btn btn-sm btn-outline-secondary me-1" title="Edit Student">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <a href="#" class="btn btn-sm btn-outline-warning me-1 disabled" title="Reset Password (Soon)">
-                                    <i class="fas fa-key"></i> Reset Pass
-                                </a>
+                                <form action="/admin/students/toggle-status/<%= student.id %>" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to <%= student.is_active ? 'deactivate' : 'activate' %> this student account?');">
+                                    <button type="submit" class="btn btn-sm <%= student.is_active ? 'btn-outline-warning' : 'btn-outline-success' %>" title="<%= student.is_active ? 'Deactivate' : 'Activate' %> Student">
+                                        <i class="fas <%= student.is_active ? 'fa-user-slash' : 'fa-user-check' %>"></i> <%= student.is_active ? 'Deact.' : 'Act.' %>
+                                    </button>
+                                </form>
                                 <!-- Delete might be too risky without soft delete / deactivation first -->
                                 <!-- <form action="/admin/students/delete/<%= student.id %>" method="POST" class="d-inline" onsubmit="return confirm('Are you sure? This is permanent.');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Student">

@@ -405,5 +405,83 @@ module.exports = {
     handleCompleteProfileInitial,
     handleForgotPassword,
     renderResetPasswordForm,
-    handleResetPassword
+    handleResetPassword,
+
+    // --- Student Portal Viewing ---
+    viewMyAcademics,
+    viewMyFees
+};
+
+// --- Student Portal Viewing ---
+
+const viewMyFees = async (req, res) => {
+    const studentId = req.student.id;
+    try {
+        const fees = await db.allAsync(`
+            SELECT description, total_amount, amount_paid, (total_amount - amount_paid) as balance,
+                   payment_date, payment_method, notes, created_at
+            FROM fees
+            WHERE student_id = ?
+            ORDER BY payment_date DESC, created_at DESC
+        `, [studentId]);
+
+        let totalCharged = 0;
+        let totalPaid = 0;
+        fees.forEach(fee => {
+            totalCharged += fee.total_amount || 0;
+            totalPaid += fee.amount_paid || 0;
+        });
+        const overallBalance = totalCharged - totalPaid;
+
+        res.render('pages/student/fees', {
+            title: 'My Fee Statement',
+            student: req.student,
+            fees: fees || [],
+            overallBalance
+        });
+    } catch (err) {
+        console.error("Error fetching student fee records:", err);
+        req.flash('error_msg', 'Could not retrieve your fee statement at this time.');
+        res.redirect('/student/dashboard');
+    }
+};
+
+const viewMyAcademics = async (req, res) => {
+    const studentId = req.student.id; // From authStudent middleware
+
+    try {
+        const student = await db.getAsync("SELECT id, first_name FROM students WHERE id = ?", [studentId]);
+        if (!student) {
+            // Should not happen if authStudent middleware is working correctly
+            req.flash('error_msg', 'Student record not found.');
+            return res.redirect('/student/login');
+        }
+
+        const enrollments = await db.allAsync(`
+            SELECT
+                c.name AS course_name,
+                e.enrollment_date,
+                e.coursework_marks,
+                e.main_exam_marks,
+                ((COALESCE(e.coursework_marks, 0) * 0.3) + (COALESCE(e.main_exam_marks, 0) * 0.7)) AS total_score, -- Calculate total score
+                e.final_grade,
+                e.certificate_issued_at -- For future certificate download link
+            FROM enrollments e
+            JOIN courses c ON e.course_id = c.id
+            WHERE e.student_id = ?
+            ORDER BY c.name
+        `, [studentId]);
+
+        res.render('pages/student/academics', {
+            title: 'My Academic Records',
+            student: req.student, // Pass full student object from middleware for header/navbar consistency
+            enrollments: enrollments || [],
+            PASSING_GRADE: parseInt(process.env.PASSING_GRADE) || 60 // For display if needed
+        });
+
+    } catch (err) {
+        console.error("Error fetching student academic records:", err);
+        req.flash('error_msg', 'Could not retrieve your academic records at this time.');
+        res.redirect('/student/dashboard');
+    }
 };

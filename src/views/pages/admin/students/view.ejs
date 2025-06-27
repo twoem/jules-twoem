@@ -65,36 +65,92 @@
             </div>
 
             <div class="col-md-6">
-                <h4>Academic Records (Placeholder)</h4>
-                <p class="text-muted">Enrolled courses, marks, and grades will be displayed here.</p>
-                <!-- TODO: Loop through student.enrollments when data is available -->
-                <ul class="list-group">
-                    <li class="list-group-item disabled">MS Word - Grade: A (Placeholder)</li>
-                    <li class="list-group-item disabled">MS Excel - In Progress (Placeholder)</li>
-                </ul>
+                <h4>Academic Records</h4>
+                <% if (enrollments && enrollments.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>CW Marks</th>
+                                    <th>Exam Marks</th>
+                                    <th>Grade</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% enrollments.forEach(function(enrollment) { %>
+                                    <tr>
+                                        <td><%= enrollment.course_name %></td>
+                                        <td><%= enrollment.coursework_marks !== null ? enrollment.coursework_marks : 'N/A' %></td>
+                                        <td><%= enrollment.main_exam_marks !== null ? enrollment.main_exam_marks : 'N/A' %></td>
+                                        <td><strong><%= enrollment.final_grade || 'Pending' %></strong></td>
+                                        <td>
+                                            <a href="/admin/enrollments/<%= enrollment.enrollment_id %>/marks" class="btn btn-xs btn-outline-primary" title="Edit Marks">
+                                                <i class="fas fa-pencil-alt"></i> Marks
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-muted">No course enrollments found for this student.</p>
+                <% } %>
+                <a href="/admin/students/<%= student.id %>/enrollments" class="btn btn-sm btn-outline-success mt-2">
+                    <i class="fas fa-tasks"></i> Manage All Enrollments
+                </a>
 
-                <h4 class="mt-4">Fee Status (Placeholder)</h4>
-                <p class="text-muted">Fee statements and payment history will be displayed here.</p>
-                <!-- TODO: Loop through student.fees when data is available -->
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center disabled">
-                        Course Fees
-                        <span class="badge bg-success rounded-pill">Paid</span>
-                    </li>
-                     <li class="list-group-item d-flex justify-content-between align-items-center disabled">
-                        Exam Fees
-                        <span class="badge bg-danger rounded-pill">Pending</span>
-                    </li>
-                </ul>
+                <h4 class="mt-4">Fee Status & History</h4>
+                <% if (fees && fees.length > 0) { %>
+                     <p><strong>Overall Balance: Ksh <%= overallBalance.toFixed(2) %></strong>
+                        (<span class="<%= overallBalance <= 0 ? 'text-success' : 'text-danger' %>">
+                            <%= overallBalance <= 0 ? (overallBalance < 0 ? 'Overpaid' : 'Cleared') : 'Owing' %>
+                        </span>)
+                    </p>
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Charge (Ksh)</th>
+                                    <th class="text-end">Payment (Ksh)</th>
+                                    <th class="text-end">Entry Balance (Ksh)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% fees.forEach(function(fee) { %>
+                                    <tr>
+                                        <td><%= new Date(fee.payment_date || fee.created_at).toLocaleDateString() %></td>
+                                        <td><%= fee.description %></td>
+                                        <td class="text-end"><%= fee.total_amount > 0 ? fee.total_amount.toFixed(2) : '-' %></td>
+                                        <td class="text-end"><%= fee.amount_paid > 0 ? fee.amount_paid.toFixed(2) : '-' %></td>
+                                        <td class="text-end"><%= fee.balance.toFixed(2) %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-muted">No fee records found for this student.</p>
+                <% } %>
+                 <a href="/admin/students/<%= student.id %>/fees/log" class="btn btn-sm btn-outline-success mt-2">
+                    <i class="fas fa-plus-circle"></i> Log New Fee/Payment
+                </a>
             </div>
         </div>
 
         <hr>
         <div class="mt-3">
             <a href="/admin/students" class="btn btn-secondary">Back to Student List</a>
-            <a href="#" class="btn btn-outline-primary disabled ms-2">Edit Student Details (Soon)</a>
-            <a href="#" class="btn btn-outline-warning disabled ms-2">Manage Enrollments (Soon)</a>
-            <a href="#" class="btn btn-outline-info disabled ms-2">Manage Fees (Soon)</a>
+            <a href="/admin/students/edit/<%= student.id %>" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-edit"></i> Edit Student Details
+            </a>
+            <a href="/admin/students/<%= student.id %>/enrollments" class="btn btn-outline-warning ms-2">
+                <i class="fas fa-tasks"></i> Manage Enrollments
+            </a>
         </div>
 
     <% } else { %>

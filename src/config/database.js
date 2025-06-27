@@ -36,6 +36,7 @@ function initializeDb() {
                 last_login_at DATETIME,
                 requires_password_change BOOLEAN DEFAULT TRUE,
                 is_profile_complete BOOLEAN DEFAULT FALSE,
+                is_active BOOLEAN DEFAULT TRUE NOT NULL, -- Added new column
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
@@ -99,6 +100,46 @@ function initializeDb() {
             if (err) console.error("Error creating enrollments table:", err.message);
             else console.log("Enrollments table checked/created.");
         });
+
+        // Add is_active column to students table if it doesn't exist
+        // This is a common way to handle schema changes in a simple setup.
+        // First, check if the column exists.
+        db.get("PRAGMA table_info(students)", (err, result) => {
+            if (err) {
+                console.error("Error fetching students table info:", err.message);
+                return;
+            }
+
+            // The result of PRAGMA table_info is an array of objects if the table exists,
+            // otherwise it might be undefined or throw an error earlier if table doesn't exist.
+            // However, CREATE TABLE IF NOT EXISTS students runs before this.
+            // PRAGMA table_info returns one row per column.
+            // We need to query the result to see if 'is_active' is a column name.
+            // This is complex to do directly here without async/await or promises for PRAGMA.
+
+            // Simpler approach for SQLite: try to add column, ignore error if it already exists.
+            // This is not perfectly robust as other errors might be ignored too.
+            // A more robust way is to query pragma_table_info and check column names.
+            // For now, let's try adding and then updating.
+            db.run("ALTER TABLE students ADD COLUMN is_active BOOLEAN DEFAULT TRUE", (alterErr) => {
+                if (alterErr) {
+                    if (alterErr.message.includes("duplicate column name: is_active")) {
+                        console.log("Column is_active already exists in students table.");
+                    } else {
+                        console.error("Error adding is_active column to students:", alterErr.message);
+                    }
+                } else {
+                    console.log("Column is_active added to students table with DEFAULT TRUE.");
+                    // For existing rows that might have gotten NULL before DEFAULT was effective (older SQLite)
+                    // or if DEFAULT TRUE wasn't retroactive.
+                    db.run("UPDATE students SET is_active = TRUE WHERE is_active IS NULL", (updateErr) => {
+                        if (updateErr) console.error("Error updating existing students for is_active:", updateErr.message);
+                        else console.log("Ensured existing students have is_active set to TRUE.");
+                    });
+                }
+            });
+        });
+
 
         // Fees Table
         db.run(`

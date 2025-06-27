@@ -64,5 +64,24 @@ router.post('/courses/delete/:id', authAdmin, adminController.deleteCourse);
 router.get('/students', authAdmin, adminController.listStudents);
 router.get('/students/view/:id', authAdmin, adminController.viewStudentDetails);
 
+// Admin - Student Editing & Status Routes
+router.get('/students/edit/:id', authAdmin, adminController.renderEditStudentForm);
+router.post('/students/edit/:id', authAdmin, adminController.updateStudent); // updateStudent includes validation
+router.post('/students/toggle-status/:id', authAdmin, adminController.toggleStudentStatus);
+
+// Admin - Student Enrollment Management Routes
+router.get('/students/:studentId/enrollments', authAdmin, adminController.renderManageStudentEnrollments);
+router.post('/students/:studentId/enrollments/add', authAdmin, adminController.enrollStudentInCourse);
+router.post('/students/enrollments/remove/:enrollmentId', authAdmin, adminController.removeStudentFromCourse);
+
+// Admin - Academic Records (Marks) Management Routes
+router.get('/enrollments/:enrollmentId/marks', authAdmin, adminController.renderEnterMarksForm);
+router.post('/enrollments/:enrollmentId/marks', authAdmin, adminController.saveMarks); // saveMarks includes validation
+
+// Admin - Fee Management Routes
+router.get('/students/:studentId/fees/log', authAdmin, adminController.renderLogFeeForm);
+router.post('/students/:studentId/fees/log', authAdmin, adminController.saveFeeEntry); // saveFeeEntry includes validation
+// TODO: Route to view all fees for a student: GET /admin/students/:studentId/fees
+
 
 module.exports = router;

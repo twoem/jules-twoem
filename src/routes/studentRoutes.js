@@ -50,5 +50,11 @@ router.post('/forgot-password', authStudentController.handleForgotPassword); // 
 router.get('/reset-password-form', authStudentController.renderResetPasswordForm); // Page to enter OTP and new password
 router.post('/reset-password', authStudentController.handleResetPassword); // Handles submission from reset-password-form.ejs
 
+// Student Portal - View Academics
+router.get('/my-academics', authStudent, authStudentController.viewMyAcademics);
+
+// Student Portal - View Fees
+router.get('/my-fees', authStudent, authStudentController.viewMyFees);
+
 
 module.exports = router;
