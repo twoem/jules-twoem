@@ -1,0 +1,37 @@
+<% if (locals.success_msg && locals.success_msg.length > 0) { %>
+    <% locals.success_msg.forEach(function(msg) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% }); %>
+<% } %>
+
+<% if (locals.error_msg && locals.error_msg.length > 0) { %>
+    <% locals.error_msg.forEach(function(msg) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% }); %>
+<% } %>
+
+<% if (locals.error && locals.error.length > 0) { %> <%# For single error string from req.flash('error') %>
+     <% locals.error.forEach(function(msg) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% }); %>
+<% } %>
+
+<% if (locals.errors && locals.errors.length > 0 && locals.errors.every(e => e.msg)) { %> <%# For express-validator errors array %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <ul class="mb-0">
+            <% errors.forEach(function(error) { %>
+                <li><%= error.msg %></li>
+            <% }); %>
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>

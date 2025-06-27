@@ -409,10 +409,118 @@ module.exports = {
 
     // --- Student Portal Viewing ---
     viewMyAcademics,
-    viewMyFees
+    viewMyFees,
+    listMyNotifications,
+    listMyStudyResources
 };
 
 // --- Student Portal Viewing ---
+
+const listMyNotifications = async (req, res) => {
+    const studentId = req.student.id;
+    try {
+        // Fetch student's enrolled course IDs first
+        const enrolledCourses = await db.allAsync(
+            "SELECT course_id FROM enrollments WHERE student_id = ?",
+            [studentId]
+        );
+        const enrolledCourseIds = enrolledCourses.map(ec => ec.course_id);
+
+        let notifications = [];
+        if (enrolledCourseIds.length > 0) {
+            // Constructing a placeholder string for IN clause: (?, ?, ...)
+            const placeholders = enrolledCourseIds.map(() => '?').join(',');
+            notifications = await db.allAsync(
+                `SELECT * FROM notifications
+                 WHERE target_audience_type = 'all'
+                    OR (target_audience_type = 'student_id' AND target_audience_identifier = ?)
+                    OR (target_audience_type = 'course_id' AND target_audience_identifier IN (${placeholders}))
+                 ORDER BY created_at DESC`,
+                [studentId, ...enrolledCourseIds]
+            );
+        } else {
+            // Student not enrolled in any course yet
+            notifications = await db.allAsync(
+                `SELECT * FROM notifications
+                 WHERE target_audience_type = 'all'
+                    OR (target_audience_type = 'student_id' AND target_audience_identifier = ?)
+                 ORDER BY created_at DESC`,
+                [studentId]
+            );
+        }
+
+        res.render('pages/student/notifications', {
+            title: 'My Notifications',
+            student: req.student,
+            notifications
+        });
+
+    } catch (err) {
+        console.error("Error fetching student notifications:", err);
+        req.flash('error_msg', 'Could not retrieve your notifications at this time.');
+        res.redirect('/student/dashboard');
+    }
+};
+
+const listMyStudyResources = async (req, res) => {
+    const studentId = req.student.id;
+    try {
+        // Fetch student's enrolled course IDs
+        const enrolledCourses = await db.allAsync(
+            "SELECT course_id FROM enrollments WHERE student_id = ?",
+            [studentId]
+        );
+        const enrolledCourseIds = enrolledCourses.map(ec => ec.course_id);
+
+        let resources = [];
+        // Base query for general resources (no course_id)
+        let query = `
+            SELECT sr.*, NULL as course_name
+            FROM study_resources sr
+            WHERE sr.course_id IS NULL
+        `;
+        let queryParams = [];
+
+        if (enrolledCourseIds.length > 0) {
+            const placeholders = enrolledCourseIds.map(() => '?').join(',');
+            // Add query for course-specific resources
+            query += `
+                UNION ALL
+                SELECT sr.*, c.name as course_name
+                FROM study_resources sr
+                JOIN courses c ON sr.course_id = c.id
+                WHERE sr.course_id IN (${placeholders})
+            `;
+            queryParams.push(...enrolledCourseIds);
+        }
+        query += " ORDER BY course_name ASC, created_at DESC";
+
+        resources = await db.allAsync(query, queryParams);
+
+        // Group resources by course for easier display (optional)
+        const groupedResources = resources.reduce((acc, resource) => {
+            const courseKey = resource.course_name || 'General Resources';
+            if (!acc[courseKey]) {
+                acc[courseKey] = [];
+            }
+            acc[courseKey].push(resource);
+            return acc;
+        }, {});
+
+        res.render('pages/student/study-resources', {
+            title: 'My Study Resources',
+            student: req.student,
+            // resources, // if not grouping
+            groupedResources // if grouping
+        });
+
+    } catch (err) {
+        console.error("Error fetching student study resources:", err);
+        req.flash('error_msg', 'Could not retrieve study resources at this time.');
+        res.redirect('/student/dashboard');
+    }
+};
+
 
 const viewMyFees = async (req, res) => {
     const studentId = req.student.id;

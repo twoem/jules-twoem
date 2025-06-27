@@ -56,5 +56,11 @@ router.get('/my-academics', authStudent, authStudentController.viewMyAcademics);
 // Student Portal - View Fees
 router.get('/my-fees', authStudent, authStudentController.viewMyFees);
 
+// Student Portal - View Notifications
+router.get('/notifications', authStudent, authStudentController.listMyNotifications);
+
+// Student Portal - View Study Resources
+router.get('/study-resources', authStudent, authStudentController.listMyStudyResources);
+
 
 module.exports = router;

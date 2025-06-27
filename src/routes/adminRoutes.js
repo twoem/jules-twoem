@@ -83,5 +83,19 @@ router.get('/students/:studentId/fees/log', authAdmin, adminController.renderLog
 router.post('/students/:studentId/fees/log', authAdmin, adminController.saveFeeEntry); // saveFeeEntry includes validation
 // TODO: Route to view all fees for a student: GET /admin/students/:studentId/fees
 
+// Admin - Notification Management Routes
+router.get('/notifications', authAdmin, adminController.listNotifications);
+router.get('/notifications/create', authAdmin, adminController.renderCreateNotificationForm);
+router.post('/notifications/create', authAdmin, adminController.createNotification); // createNotification includes validation
+router.post('/notifications/delete/:id', authAdmin, adminController.deleteNotification);
+
+// Admin - Study Resource Management Routes
+router.get('/study-resources', authAdmin, adminController.listResources);
+router.get('/study-resources/add', authAdmin, adminController.renderCreateResourceForm); // Changed from 'upload' to 'add' for consistency
+router.post('/study-resources/add', authAdmin, adminController.createResource); // Changed from 'upload' to 'add'
+router.get('/study-resources/edit/:id', authAdmin, adminController.renderEditResourceForm);
+router.post('/study-resources/edit/:id', authAdmin, adminController.updateResource);
+router.post('/study-resources/delete/:id', authAdmin, adminController.deleteResource);
+
 
 module.exports = router;
