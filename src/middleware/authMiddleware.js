@@ -1,28 +1,14 @@
 const jwt = require('jsonwebtoken');
-
-// Helper function to get JWT secret (consistent with authAdminController)
-const getJwtSecret = () => {
-    const secret = process.env.JWT_SECRET;
-    if (!secret || secret.length < 32) {
-        console.error(
-            "CRITICAL SECURITY WARNING: JWT_SECRET is not defined, empty, or too short (less than 32 characters) in .env. " +
-            "Using a default development secret. THIS IS INSECURE AND MUST BE FIXED FOR PRODUCTION."
-        );
-        return process.env.NODE_ENV === 'production'
-            ? ' fallback_prod_secret_that_is_very_long_and_random_and_changed_immediately'
-            : 'dev_fallback_secret_must_be_long_and_random_at_least_32_chars';
-    }
-    return secret;
-};
+const { getJwtSecret } = require('../utils/jwtHelper'); // Import from helper
 
 // Middleware to authenticate admins
 const authAdmin = (req, res, next) => {
     console.log(`[AuthAdmin] Path: ${req.method} ${req.originalUrl}`);
     console.log('[AuthAdmin] All Cookies:', req.cookies);
-    const token = req.cookies.token;
+    const token = req.cookies.admin_auth_token; // Changed cookie name
 
     if (!token) {
-        console.log('[AuthAdmin] No token found in cookies.');
+        console.log('[AuthAdmin] No admin_auth_token found in cookies.');
         return res.status(401).redirect('/admin/login?error=Authentication+required.+Please+login.');
     }
 
@@ -52,21 +38,27 @@ const authStudent = (req, res, next) => {
     // Add similar logging as authAdmin for debugging student sessions if needed
     console.log(`[AuthStudent] Path: ${req.method} ${req.originalUrl}`);
     console.log('[AuthStudent] All Cookies:', req.cookies);
-    const token = req.cookies.token;
+    const token = req.cookies.student_auth_token; // Changed cookie name
 
     if (!token) {
+        console.log('[AuthStudent] No student_auth_token found in cookies.');
         return res.status(401).redirect('/student/login?error=Authentication+required.+Please+login.');
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (decoded.isAdmin === true) {
-            return res.status(403).redirect('/student/login?error=Access+denied.+Please+use+a+student+account.');
+        console.log('[AuthStudent] student_auth_token found. Verifying...');
+        const decoded = jwt.verify(token, getJwtSecret()); // Use helper
+        console.log('[AuthStudent] Token decoded successfully:', decoded.email, 'isStudent:', decoded.isStudent);
+
+        if (decoded.isAdmin === true || !decoded.isStudent) { // Check for isStudent flag
+            console.log('[AuthStudent] Token is not a valid student token (isAdmin true or isStudent not true).');
+            return res.status(403).redirect('/student/login?error=Access+denied.+Invalid+token+type.');
         }
         req.student = decoded;
+        console.log('[AuthStudent] Student authenticated:', req.student.email);
         next();
     } catch (err) {
-        console.error('Student JWT verification error:', err.message);
+        console.error('[AuthStudent] JWT verification error:', err.name, err.message);
         if (err.name === 'TokenExpiredError') {
             return res.status(401).redirect('/student/login?error=Session+expired.+Please+login+again.');
         }

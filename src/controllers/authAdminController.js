@@ -1,22 +1,6 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); // Ensure jwt is required
-
-// Helper function to get JWT secret
-const getJwtSecret = () => {
-    const secret = process.env.JWT_SECRET;
-    if (!secret || secret.length < 32) {
-        console.error(
-            "CRITICAL SECURITY WARNING: JWT_SECRET is not defined, empty, or too short (less than 32 characters) in .env. " +
-            "Using a default development secret. THIS IS INSECURE AND MUST BE FIXED FOR PRODUCTION."
-        );
-        // This fallback is for development convenience ONLY.
-        // In a production environment, the application should ideally fail to start if JWT_SECRET is missing or insecure.
-        return process.env.NODE_ENV === 'production'
-            ? ' fallback_prod_secret_that_is_very_long_and_random_and_changed_immediately' // This should never be used in real prod
-            : 'dev_fallback_secret_must_be_long_and_random_at_least_32_chars';
-    }
-    return secret;
-};
+const jwt = require('jsonwebtoken');
+const { getJwtSecret } = require('../utils/jwtHelper'); // Import from helper
 
 // Admin login logic
 const loginAdmin = async (req, res) => {
@@ -76,11 +60,12 @@ const loginAdmin = async (req, res) => {
             { expiresIn: process.env.JWT_EXPIRE || '1h' }
         );
 
-        res.cookie('token', token, {
+        res.cookie('admin_auth_token', token, { // Changed cookie name
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: parseInt(process.env.JWT_EXPIRE_MS || (1 * 60 * 60 * 1000).toString(), 10),
-            path: '/admin'
+            path: '/admin',
+            sameSite: 'Lax' // Explicitly set SameSite
         });
 
         res.redirect('/admin/dashboard');
@@ -96,11 +81,12 @@ const loginAdmin = async (req, res) => {
 
 // Admin logout logic
 const logoutAdmin = (req, res) => {
-    res.cookie('token', '', {
+    res.cookie('admin_auth_token', '', { // Changed cookie name
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         expires: new Date(0),
-        path: '/admin'
+        path: '/admin',
+        sameSite: 'Lax' // Explicitly set SameSite
     });
     req.flash('success_msg', 'You have been logged out successfully.');
     res.redirect('/admin/login');

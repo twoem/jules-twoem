@@ -2,9 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 const { body, validationResult } = require('express-validator');
+const { getJwtSecret } = require('../utils/jwtHelper'); // Import getJwtSecret
 
 // Student Login
-const loginStudent = async (req, res) => { /* ... जस का तस ... */
+const loginStudent = async (req, res) => {
     const { registrationNumber, password } = req.body;
     if (!registrationNumber || !password) {
         req.flash('error', 'Registration number and password are required.');
@@ -22,8 +23,25 @@ const loginStudent = async (req, res) => { /* ... जस का तस ... */
             return res.status(401).render('pages/student-login', { title: 'Student Portal Login', activeTab: 'login-panel'});
         }
         await db.runAsync("UPDATE students SET last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [student.id]);
-        const token = jwt.sign({ id: student.id, registrationNumber: student.registration_number, email: student.email, firstName: student.first_name }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '1h' });
-        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: parseInt(process.env.JWT_EXPIRE_MS || (1 * 60 * 60 * 1000).toString(), 10), path: '/' });
+
+        const tokenPayload = {
+            id: student.id,
+            registrationNumber: student.registration_number,
+            email: student.email,
+            firstName: student.first_name,
+            // isAdmin: false, // Can explicitly set if needed, or rely on absence of isAdmin:true
+            isStudent: true // Explicitly mark as student token
+        };
+        const token = jwt.sign(tokenPayload, getJwtSecret(), { expiresIn: process.env.JWT_EXPIRE || '1h' });
+
+        res.cookie('student_auth_token', token, { // Changed cookie name
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: parseInt(process.env.JWT_EXPIRE_MS || (1 * 60 * 60 * 1000).toString(), 10),
+            path: '/',
+            sameSite: 'Lax' // Explicitly set SameSite
+        });
+
         if (student.requires_password_change) return res.redirect('/student/change-password-initial');
         if (!student.is_profile_complete) return res.redirect('/student/complete-profile-initial');
         res.redirect('/student/dashboard');
@@ -33,11 +51,24 @@ const loginStudent = async (req, res) => { /* ... जस का तस ... */
         res.status(500).render('pages/student-login', { title: 'Student Portal Login', activeTab: 'login-panel'});
     }
 };
-const logoutStudent = (req, res) => { /* ... जस का तस ... */
-    res.cookie('token', '', { httpOnly: true, secure: process.env.NODE_ENV === 'production', expires: new Date(0), path: '/' });
+
+const logoutStudent = (req, res) => {
+    res.cookie('student_auth_token', '', { // Changed cookie name
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        expires: new Date(0),
+        path: '/',
+        sameSite: 'Lax' // Explicitly set SameSite
+    });
     req.flash('success_msg', 'You have been logged out successfully.');
     res.redirect('/student/login');
 };
+
+// ... (rest of the functions: renderChangePasswordInitialForm, handleChangePasswordInitial, etc. remain the same as per previous full file content)
+// Ensure all other functions that might have used req.student (from a generic 'token' cookie) are still fine
+// or if they need to be aware of the specific 'student_auth_token' (though middleware handles populating req.student).
+// The current functions mostly rely on req.student.id from the decoded token, which should be fine.
+
 const renderChangePasswordInitialForm = (req, res) => { /* ... जस का तस ... */
     res.render('pages/student/change-password-initial', { title: 'Change Your Password', student: req.student, defaultStudentPassword: process.env.DEFAULT_STUDENT_PASSWORD, passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8 });
 };
@@ -70,8 +101,7 @@ const handleCompleteProfileInitial = async (req, res) => { /* ... जस का 
     const studentId = req.student.id;
     if (!nokName || !nokRelationship || !nokPhone) {
         req.flash('error_msg', 'Please fill in all required Next of Kin details (Name, Relationship, Phone).');
-        // Re-render with values and error
-        return res.status(400).render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, nokName, nokRelationship, nokPhone, nokEmail });
+        return res.status(400).render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, error: req.flash('error_msg'), nokName, nokRelationship, nokPhone, nokEmail });
     }
     const nokDetails = JSON.stringify({ name: nokName, relationship: nokRelationship, phone: nokPhone, email: nokEmail });
     try {
@@ -122,7 +152,7 @@ const handleForgotPassword = async (req, res) => { /* ... जस का तस .
     }
 };
 const renderResetPasswordForm = (req, res) => { /* ... जस का तस ... */
-    const { regNo } = req.query; // Removed message, error as they come from flash
+    const { regNo } = req.query;
     if (!regNo) {
         req.flash('error_msg', 'Invalid password reset link or session.');
         return res.redirect('/student/login');
@@ -316,51 +346,22 @@ const handleUpdateNok = async (req, res) => { /* ... जस का तस ... */
         res.redirect('/student/dashboard');
     } catch (err) { console.error("Error updating student NOK details:", err); req.flash('error_msg', 'An error occurred while updating your Next of Kin details.'); res.redirect('/student/profile/edit-nok'); }
 };
-
-// --- Student Credential Retrieval ---
-const retrieveStudentCredentials = async (req, res) => {
+const retrieveStudentCredentials = async (req, res) => { /* ... जस का तस ... */
     const { email, firstName } = req.body;
     const activeTab = 'new-student-panel';
     const errorRedirectUrl = `/student/login?activeTab=${activeTab}#${activeTab}`;
     const successRedirectUrl = `/student/login?activeTab=${activeTab}#${activeTab}`;
-
-    if (!email || !firstName) {
-        req.flash('error', 'Email and First Name are required.');
-        return res.redirect(errorRedirectUrl);
-    }
-
+    if (!email || !firstName) { req.flash('error', 'Email and First Name are required.'); return res.redirect(errorRedirectUrl); }
     try {
-        const student = await db.getAsync(
-            "SELECT id, registration_number, requires_password_change, credentials_retrieved_once FROM students WHERE lower(email) = lower(?) AND lower(first_name) = lower(?)",
-            [email.trim(), firstName.trim()]
-        );
-
-        if (!student) {
-            req.flash('error', 'No matching student record found with the provided details.');
-            return res.redirect(errorRedirectUrl);
-        }
-
-        if (!student.requires_password_change) {
-            req.flash('error', 'Account setup already completed. Please use the login or forgot password options.');
-            return res.redirect(errorRedirectUrl);
-        }
-
-        if (student.credentials_retrieved_once) {
-            req.flash('error', 'Initial credentials have already been retrieved for this account. Please use the "Forgot Password" option if needed.');
-            return res.redirect(errorRedirectUrl);
-        }
-
+        const student = await db.getAsync( "SELECT id, registration_number, requires_password_change, credentials_retrieved_once FROM students WHERE lower(email) = lower(?) AND lower(first_name) = lower(?)", [email.trim(), firstName.trim()] );
+        if (!student) { req.flash('error', 'No matching student record found.'); return res.redirect(errorRedirectUrl); }
+        if (!student.requires_password_change) { req.flash('error', 'Account setup already completed.'); return res.redirect(errorRedirectUrl); }
+        if (student.credentials_retrieved_once) { req.flash('error', 'Initial credentials already retrieved.'); return res.redirect(errorRedirectUrl); }
         await db.runAsync("UPDATE students SET credentials_retrieved_once = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [student.id]);
-
         const successMessage = `Your credentials: <br>Registration Number: <strong>${student.registration_number}</strong><br>Default Password: <strong>${process.env.DEFAULT_STUDENT_PASSWORD}</strong><br>Please login and change your password immediately.`;
         req.flash('success_msg', successMessage);
         return res.redirect(successRedirectUrl);
-
-    } catch (err) {
-        console.error("Error retrieving student credentials:", err);
-        req.flash('error', 'An error occurred. Please try again.');
-        return res.redirect(errorRedirectUrl);
-    }
+    } catch (err) { console.error("Error retrieving student credentials:", err); req.flash('error', 'An error occurred.'); return res.redirect(errorRedirectUrl); }
 };
 
 

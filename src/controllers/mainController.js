@@ -1,5 +1,6 @@
 // src/controllers/mainController.js
 const db = require('../config/database'); // Import database connection
+const { sendEmailWithTemplate } = require('../config/mailer'); // Use sendEmailWithTemplate
 
 // Renders the home page
 const renderHomePage = (req, res) => {
@@ -10,29 +11,29 @@ const renderHomePage = (req, res) => {
 const renderContactPage = (req, res) => {
     res.render('pages/contact', {
         title: 'Contact Us',
-        message: req.query.message, // For success/error messages via query params
+        // Flash messages are now handled by global middleware,
+        // so they will be available in res.locals directly in the template.
+        // No need to pass message/error from query params here if using flash for POST submissions.
+        // However, keeping them if some GET routes might still use query params for messages.
+        message: req.query.message,
         error: req.query.error
     });
 };
-
-const { sendEmailWithTemplate } = require('../config/mailer'); // Use sendEmailWithTemplate
 
 // Handles contact form submission
 const handleContactForm = async (req, res) => {
     const { name, email: senderEmail, subject: userSubject, message: userMessage } = req.body;
 
-    // Basic validation
     if (!name || !senderEmail || !userSubject || !userMessage) {
         req.flash('error_msg', 'Please fill in all fields.');
         return res.redirect('/contact');
     }
-    // More robust validation (e.g., email format) could be added here
 
     const emailSubject = `New Contact Form: ${userSubject} from ${name}`;
     const emailData = {
         senderName: name,
         senderEmail: senderEmail,
-        emailSubject: userSubject, // Subject as entered by user
+        emailSubject: userSubject, // Subject as entered by user for clarity in email content
         emailMessage: userMessage,
         submissionDate: new Date().toLocaleString()
     };
@@ -40,10 +41,10 @@ const handleContactForm = async (req, res) => {
     try {
         await sendEmailWithTemplate({
             to: process.env.CONTACT_RECEIVER_EMAIL,
-            subject: emailSubject, // Subject for the email received by admin
-            templateName: 'contact-form-submission', // New template
+            subject: emailSubject, // This is the subject line of the email notification itself
+            templateName: 'contact-form-submission',
             data: emailData,
-            replyTo: senderEmail // IMPORTANT: Set Reply-To to the client's email
+            replyTo: senderEmail // Correctly set to the client's email
         });
 
         req.flash('success_msg', 'Thank you for your message! It has been sent successfully.');
@@ -57,35 +58,36 @@ const handleContactForm = async (req, res) => {
 
 // Renders the admin login page
 const renderAdminLoginPage = (req, res) => {
+    // Flash messages (success_msg, error_msg, error) are available via res.locals due to global middleware
     res.render('pages/admin-login', {
-        title: 'Admin Login',
-        error: req.query.error // For displaying login errors
+        title: 'Admin Login'
     });
 };
 
 // Renders the student login page
 const renderStudentLoginPage = (req, res) => {
+    // Flash messages and activeTab (if set by a redirect to here with query param)
     res.render('pages/student-login', {
         title: 'Student Portal Login',
-        message: req.query.message, // For general messages
-        error: req.query.error   // For errors
+        activeTab: req.query.activeTab // For activating specific tab on load
     });
 };
 
-const renderServicesPage = (req, res) => {
+const renderServicesPage = async (req, res) => {
     try {
         const courses = await db.allAsync("SELECT id, name, description FROM courses ORDER BY name ASC");
         res.render('pages/services', {
             title: 'Our Services',
-            courses // Pass courses to the view
+            courses
         });
     } catch (err) {
         console.error("Error fetching courses for services page:", err);
-        // Render services page without courses or with an error message
+        // Flash message will be shown via global middleware if set before render
+        // For a direct error rendering like this, pass error_msg directly
         res.status(500).render('pages/services', {
             title: 'Our Services',
             courses: [],
-            error_msg: "Could not load course information at this time."
+            error_msg_direct: "Could not load course information at this time." // Use a different var name if needed
         });
     }
 };
@@ -93,7 +95,6 @@ const renderServicesPage = (req, res) => {
 const renderDownloadsPage = async (req, res) => {
     try {
         const allDocuments = await db.allAsync("SELECT * FROM downloadable_documents ORDER BY type, created_at DESC");
-
         const publicDocs = [];
         const eulogyDocs = [];
         const now = new Date();
@@ -102,29 +103,18 @@ const renderDownloadsPage = async (req, res) => {
             if (doc.type === 'public') {
                 publicDocs.push(doc);
             } else if (doc.type === 'eulogy') {
-                // If no expiry_date, it implies it was never meant to expire or logic error in creation.
-                // However, spec says "Eulogy documents (Expire after 7 days)" - this was handled on creation if no date was given.
-                // If an expiry_date IS set, we use that.
-                // If expiry_date is NULL for a eulogy, we might assume it's an error or apply a default interpretation.
-                // The admin form defaults eulogy expiry to 7 days from creation if not set.
-                // So, a NULL expiry_date for a eulogy document should ideally not happen with current admin CRUD.
-                // We will filter by expiry_date if present and it's in the past.
-
                 let effectiveExpiryDate;
                 if (doc.expiry_date) {
                     effectiveExpiryDate = new Date(doc.expiry_date);
-                } else {
-                    // If no specific expiry_date, default to 7 days from creation for eulogy docs
+                } else { // Default to 7 days from creation if no specific expiry for eulogy
                     effectiveExpiryDate = new Date(doc.created_at);
                     effectiveExpiryDate.setDate(effectiveExpiryDate.getDate() + 7);
                 }
-
                 if (effectiveExpiryDate >= now) {
                     eulogyDocs.push(doc);
                 }
             }
         });
-
         res.render('pages/downloads', {
             title: 'Downloads',
             publicDocs,
@@ -136,26 +126,23 @@ const renderDownloadsPage = async (req, res) => {
             title: 'Downloads',
             publicDocs: [],
             eulogyDocs: [],
-            error_msg: "Could not load documents at this time."
+            error_msg_direct: "Could not load documents at this time."
         });
     }
 };
 
-// Note: Dashboards will likely need auth middleware and data fetching later
+// Dashboard placeholders - these actual dashboard routes are protected and handled by their respective controllers
 const renderStudentDashboardPage = (req, res) => {
-    // This will require authentication logic later
-    // For now, direct render. Will be moved to a protected route.
-    res.render('pages/student-dashboard', { title: 'Student Dashboard' });
+    // This is likely unused as /student/dashboard is handled by studentRoutes + authStudentController
+    res.render('pages/student-dashboard', { title: 'Student Dashboard', student: req.student });
 };
-
 const renderAdminDashboardPage = (req, res) => {
-    // This will require authentication logic later
-    // For now, direct render. Will be moved to a protected route.
-    res.render('pages/admin-dashboard', { title: 'Admin Dashboard' });
+    // This is likely unused as /admin/dashboard is handled by adminRoutes + adminController
+    res.render('pages/admin-dashboard', { title: 'Admin Dashboard', admin: req.admin });
 };
 
 const renderDataProtectionPage = (req, res) => {
-    res.render('pages/data-protection', { title: 'Data Protection Policy', process }); // Pass process for .env access in EJS if needed
+    res.render('pages/data-protection', { title: 'Data Protection Policy' /* process removed, pass env vars specifically if needed */ });
 };
 
 const renderGalleryPage = (req, res) => {
@@ -170,8 +157,8 @@ module.exports = {
     renderStudentLoginPage,
     renderServicesPage,
     renderDownloadsPage,
-    renderStudentDashboardPage,
-    renderAdminDashboardPage,
+    renderStudentDashboardPage, // These might be dead code if dashboards are fully handled by auth controllers
+    renderAdminDashboardPage,   //
     renderDataProtectionPage,
     renderGalleryPage,
 };
