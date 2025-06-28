@@ -1,16 +1,27 @@
 /* Custom CSS for Twoem Online Productions */
 
 :root {
-    --primary-color: #0056b3; /* A strong, professional blue */
-    --primary-hover-color: #004085; /* Darker shade for hover */
-    --secondary-color: #6c757d; /* Bootstrap secondary */
-    --light-bg-color: #f8f9fa; /* Bootstrap light bg */
-    --text-dark: #212529;
-    --text-muted-custom: #5a6268; /* Slightly darker muted text for better readability */
-    --navbar-bg-color: #004085; /* Darker blue for navbar */
-    --navbar-text-color: #ffffff;
-    --navbar-hover-color: #e0e0e0;
-    --navbar-active-border: #ffffff;
+    /* Sky Blue Theme */
+    --sky-blue-primary: #5DADE2;         /* Main Sky Blue for buttons, links, primary actions */
+    --sky-blue-dark: #2E86C1;          /* Darker Sky Blue for hover, accents, some text */
+    --sky-blue-deep: #1B4F72;          /* Very Dark Blue for contrast, e.g., navbar bg */
+    --sky-blue-light-accent: #A9CCE3;   /* Light Sky Blue for subtle highlights */
+    --sky-blue-bg-light: #EBF5FB;      /* Very Light Sky Blue for backgrounds */
+    --sky-blue-text-on-dark: #FFFFFF;  /* White text for dark backgrounds */
+    --sky-blue-text-on-light: #1B4F72; /* Dark blue text for light backgrounds */
+    --sky-blue-primary-rgb: 93, 173, 226; /* RGB components of primary sky blue */
+
+    /* General Variables (can reuse some from above) */
+    --primary-color: var(--sky-blue-primary);
+    --primary-hover-color: var(--sky-blue-dark);
+    --secondary-color: #6c757d; /* Bootstrap secondary - can remain or be themed */
+    --light-bg-color: var(--sky-blue-bg-light);
+    --text-dark: var(--sky-blue-deep); /* Using deep blue for primary text */
+    --text-muted-custom: #5a6268;
+    --navbar-bg-color: var(--sky-blue-deep);
+    --navbar-text-color: var(--sky-blue-text-on-dark);
+    --navbar-hover-color: #d0e0ff; /* Lighter shade for hover on dark bg */
+    --navbar-active-border: var(--sky-blue-primary); /* Active link underline with main sky blue */
 }
 
 body {
@@ -66,27 +77,43 @@ main {
 }
 
 /* Headings */
-h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 {
-    color: var(--primary-color);
+h1, .h1 { /* Main page titles often */
+    color: var(--sky-blue-deep);
+    margin-bottom: 1rem; /* Default Bootstrap is often larger */
 }
-h1.display-5, h1.display-4, h1.display-6 {
-     color: var(--text-dark);
+h2, .h2 {
+    color: var(--sky-blue-deep);
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
 }
-.page-title { /* Custom class for main page titles if needed */
+h3, .h3, h4, .h4, h5, .h5 {
+    color: var(--sky-blue-dark); /* Slightly lighter for subheadings */
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Specific large display headings for hero sections etc. */
+h1.display-4, h1.display-5, h1.display-6 {
+     color: var(--text-dark); /* Keep these as defined, or theme them */
+}
+.page-title { /* Custom class for main page titles if used for specific styling */
+    color: var(--sky-blue-deep);
     margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eee;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--sky-blue-primary); /* Accent with primary color */
+    display: inline-block; /* So border only spans the text width */
 }
 
 
 /* Card header customisation */
 .card-header {
-    background-color: var(--light-bg-color);
-    border-bottom: 1px solid #dee2e6;
+    background-color: var(--sky-blue-bg-light); /* Lighter sky blue for card headers */
+    border-bottom: 1px solid var(--sky-blue-light-accent);
     font-weight: 500;
+    color: var(--sky-blue-deep); /* Darker text for card headers */
 }
-.card-header h4, .card-header h5 { /* Ensure heading color in card headers also uses primary */
-     color: var(--primary-color) !important;
+.card-header h4, .card-header h5 {
+     color: var(--sky-blue-deep) !important; /* Consistent with card header text */
 }
 
 /* Card customisations */
@@ -142,9 +169,55 @@ footer .text-center {
 /* Form control focus */
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(0, 86, 179, 0.25); /* Primary color with opacity */
+    box-shadow: 0 0 0 0.25rem rgba(var(--sky-blue-primary-rgb), 0.25);
+}
+
+/* Collapsed Navbar (Mobile Menu) Styling */
+@media (max-width: 991.98px) { /* Bootstrap's lg breakpoint (for navbar-expand-lg) */
+    .navbar-collapse.collapse.show,
+    .navbar-collapse.collapsing {
+        /* Use a slightly lighter shade of navbar bg for dropdown or keep same */
+        background-color: var(--navbar-bg-color);
+        padding: 0.75rem 1rem; /* Add some padding */
+        margin-top: 0.5rem; /* Optional: space from toggler */
+        border-radius: 0.25rem; /* Optional: rounded corners for dropdown */
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); /* Optional: shadow for dropdown */
+    }
+    .navbar-nav .nav-item {
+        margin-bottom: 0.25rem; /* Space between vertical items */
+    }
+    .navbar-nav .nav-link {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        /* Text color is already set to --navbar-text-color */
+    }
+    .navbar-nav .nav-link.active {
+        /* Active state might need adjustment for vertical menu */
+        /* border-bottom: 2px solid var(--navbar-active-border); */ /* This was for horizontal */
+        background-color: rgba(var(--sky-blue-primary-rgb), 0.15); /* Subtle background for active item */
+        border-radius: 0.25rem;
+    }
 }
 .form-select:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(0, 86, 179, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--sky-blue-primary-rgb), 0.25);
+}
+
+/* Gallery Page Specific Styles */
+.gallery-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.gallery-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.15) !important; /* More prominent shadow on hover */
+}
+.gallery-card .card-footer {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+.gallery-card .card-footer .badge {
+    background-color: var(--sky-blue-dark) !important;
+    color: var(--sky-blue-text-on-dark);
+    font-weight: 500;
+    padding: 0.3em 0.6em;
 }

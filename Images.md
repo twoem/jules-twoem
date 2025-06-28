@@ -28,14 +28,14 @@ This section will be populated as images are added to specific pages.
 
 The gallery page (`src/views/pages/gallery.ejs`) uses placeholder images. These should be replaced with actual photos. The current placeholders and their intended themes are:
 
-| Placeholder URL (Example)                            | Conceptual Theme                   | Title Example                      | Tags Example                             | Notes for Sourcing Real Images (e.g., from Unsplash/Pexels) | Intended Location in Repo |
-| ---------------------------------------------------- | ---------------------------------- | ---------------------------------- | ---------------------------------------- | ----------------------------------------------------------- | ------------------------- |
-| `https://via.placeholder.com/400x300.png?text=Quality+Prints` | Quality Printing                   | Quality Printing Solutions         | Printing, Design, Brochures              | Search for "modern printing", "brochure design", "quality flyers" | `public/images/gallery/`  |
-| `https://via.placeholder.com/400x300.png?text=Computer+Class`  | Computer Education in action       | Empowering Through Education       | Education, Computer Skills, Community    | Search for "computer class Kenya", "adult education technology" | `public/images/gallery/`  |
-| `https://via.placeholder.com/400x300.png?text=Office+Support`  | Office Services / Support          | Efficient Office Services          | Office Support, CV Writing, Productivity | Search for "professional resume", "office assistance"       | `public/images/gallery/`  |
-| `https://via.placeholder.com/400x300.png?text=Fast+Internet`   | Internet Cafe / Connectivity       | Reliable Internet Access           | Internet, WiFi, Connectivity             | Search for "internet cafe", "people using wifi"             | `public/images/gallery/`  |
-| `https://via.placeholder.com/400x300.png?text=Gov+Service+Help`| Government Service Assistance      | Government Service Assistance      | eCitizen, Support, KRA                   | Search for "community support", "online services Kenya"     | `public/images/gallery/`  |
-| `https://via.placeholder.com/400x300.png?text=Twoem+Teamwork`  | Team or Service Interaction        | Dedicated to Our Community         | Team, Service, Twoem                     | Search for "friendly customer service", "local business team" | `public/images/gallery/`  |
+| Conceptual Theme                   | Title Example                      | Tags Example                             | Notes for Sourcing Real Images (e.g., from Unsplash/Pexels) | Example Local Path (to be created by user) |
+| ---------------------------------- | ---------------------------------- | ---------------------------------------- | ----------------------------------------------------------- | ------------------------------------------ |
+| Quality Printing                   | Quality Printing Solutions         | Printing, Design, Brochures              | Search for "modern printing", "brochure design", "quality flyers" | `public/images/gallery/prints-showcase.jpg`  |
+| Computer Education in action       | Empowering Through Education       | Education, Computer Skills, Community    | Search for "computer class Kenya", "adult education technology" | `public/images/gallery/computer-training.jpg`|
+| Office Services / Support          | Efficient Office Services          | Office Support, CV Writing, Productivity | Search for "professional resume", "office assistance"       | `public/images/gallery/office-services.jpg`  |
+| Internet Cafe / Connectivity       | Reliable Internet Access           | Internet, WiFi, Connectivity             | Search for "internet cafe", "people using wifi"             | `public/images/gallery/internet-access.jpg`  |
+| Government Service Assistance      | Government Service Assistance      | eCitizen, Support, KRA                   | Search for "community support", "online services Kenya"     | `public/images/gallery/ecitizen-assistance.jpg`|
+| Team or Service Interaction        | Dedicated to Our Community         | Team, Service, Community                 | Search for "friendly customer service", "local business team" | `public/images/gallery/twoem-community.jpg`  |
 
 ## Icons
 
@@ -55,11 +55,14 @@ The gallery page (`src/views/pages/gallery.ejs`) uses placeholder images. These 
 
 ## Decorative & Illustrative Images (Placeholders & Ideas)
 
-| Placeholder Description           | Intended Location in Repo     | Page(s) / Section        | Purpose                                       | Current Placeholder Source / Notes        |
-| --------------------------------- | ----------------------------- | ------------------------ | --------------------------------------------- | ----------------------------------------- |
-| Homepage Hero Banner              | `public/images/home/hero-placeholder.jpg` | Home           | Main welcoming visual for homepage            | Generic placeholder. Source from Unsplash/Pexels (e.g., "community technology center", "modern office services") |
-| Service: Digital Printing         | `public/images/services/`     | Services (details page)  | Visual for Digital Printing section/details   | Unsplash search: "printing press", "brochures" |
-| Service: Government Services      | `public/images/services/`     | Services (details page)  | Visual for Government Services section        | Unsplash search: "official document", "government building" |
+| Placeholder Description           | Suggested Filename (in `public/images/...`) | Page(s) / Section        | Purpose                                       | Sourcing Notes (Unsplash/Pexels Keywords) & Specs |
+| --------------------------------- | ------------------------------------------- | ------------------------ | --------------------------------------------- | ------------------------------------------------- |
+| Homepage Hero Banner              | `home/hero-image.jpg`                       | Home                     | Main welcoming visual                         | "community technology kenya", "empowerment technology africa", "modern local business services". Vibrant, welcoming. ~1600x600px. |
+| Services Page Header              | `services/services-header.jpg`              | Services (Page Header)   | General illustrative header                   | "modern office", "technology services", "community learning". ~1600x400px. |
+| Downloads Page Header             | `downloads/downloads-header.jpg`            | Downloads (Page Header)  | Illustrative header for downloads             | "documents abstract", "files organized", "information access". ~1600x300px. |
+| Login/Contact Page Background     | `backgrounds/login-bg.jpg`                  | Login(s), Contact        | Subtle background for form pages              | "abstract professional background", "subtle geometric pattern blue", "light texture". Should be low contrast. |
+| Service: Digital Printing         | `services/digital-printing.jpg`             | Services (details page)  | Visual for Digital Printing section/details   | "printing press", "brochures", "graphic design print" |
+| Service: Government Services      | `services/government-services.jpg`          | Services (details page)  | Visual for Government Services section        | "official document", "government building kenya" |
 | Service: Office Services          | `public/images/services/`     | Services (details page)  | Visual for Office Services section            | Unsplash search: "office work", "typing"  |
 | Service: Internet Services        | `public/images/services/`     | Services (details page)  | Visual for Internet Services section          | Unsplash search: "wifi router", "people using laptops" |
 | Service: Computer Education       | `public/images/services/`     | Services (details page or section header) | Visual for Computer Education section     | Unsplash search: "computer class", "students learning" |

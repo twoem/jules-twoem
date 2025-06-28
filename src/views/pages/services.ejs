@@ -1,14 +1,18 @@
 <%- include('../partials/header', { title: 'Our Services' }) %>
 <%- include('../partials/navbar') %>
 
-<main class="container mt-5">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="mb-4">Our Services</h1>
-            <p class="lead">Twoem Online Productions offers a wide range of digital, office, and government-related services to meet your needs. Explore our offerings below.</p>
-            <!-- Detailed service cards will be added here later -->
+<main class="pt-0"> <!-- Remove mt-5 if using full-width header image -->
+    <!-- Optional Header Image for Services Page -->
+    <div class="container-fluid px-0 mb-5">
+        <div style="background: url('/images/services/services-header-placeholder.jpg') no-repeat center center; background-size: cover; height: 40vh; display: flex; align-items: center; justify-content: center; text-align: center;">
+            <h1 class="display-4 fw-bold text-white page-title-hero" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.7);">Our Comprehensive Services</h1>
+        </div>
+    </div>
 
-            <p class="lead">Twoem Online Productions offers a wide range of digital, office, and government-related services to meet your needs. Explore our offerings below.</p>
+    <div class="container"> <%# Content container starts here %>
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="lead mb-5">Twoem Online Productions offers a wide range of digital, office, government-related, and educational services to meet your needs. Explore our offerings below.</p>
 
             <% if (locals.error_msg) { %>
                 <div class="alert alert-danger"><%= error_msg %></div>

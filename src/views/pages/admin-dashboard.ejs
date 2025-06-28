@@ -23,72 +23,62 @@
     <% } %>
     <p class="small text-muted">Last student/fees update by: [Admin Name] on [Date] (Placeholder - to be implemented)</p>
 
-
-    <div class="row mt-4">
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Student Management</h5>
-                    <p class="card-text">Register new students, view student list, manage academic records and fees.</p>
-                    <a href="/admin/register-student" class="btn btn-primary">Register New Student</a>
-                    <a href="/admin/students" class="btn btn-info mt-2">View All Students</a>
+    <div class="row mt-4 g-4">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title"><i class="fas fa-users me-2"></i>Student Management</h5>
+                    <p class="card-text small text-muted flex-grow-1">Register new students, view list, edit details, manage enrollments, marks, and fees.</p>
+                    <a href="/admin/register-student" class="btn btn-sm btn-primary mt-auto mb-2 d-block">Register New Student</a>
+                    <a href="/admin/students" class="btn btn-sm btn-info d-block">View All Students</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Course Management</h5>
-                    <p class="card-text">Define and manage all courses offered by Twoem Online.</p>
-                    <a href="/admin/courses" class="btn btn-primary">Manage Courses</a>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title"><i class="fas fa-book me-2"></i>Course Management</h5>
+                    <p class="card-text small text-muted flex-grow-1">Define and manage all courses offered by Twoem Online.</p>
+                    <a href="/admin/courses" class="btn btn-sm btn-primary mt-auto d-block">Manage Courses</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-bullhorn me-2"></i>Notifications</h5>
-                    <p class="card-text">Create and manage notifications for students.</p>
-                    <a href="/admin/notifications" class="btn btn-primary">Manage Notifications</a>
+                    <p class="card-text small text-muted flex-grow-1">Create and manage notifications for students.</p>
+                    <a href="/admin/notifications" class="btn btn-sm btn-primary mt-auto d-block">Manage Notifications</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-book-reader me-2"></i>Study Resources</h5>
-                    <p class="card-text">Upload and manage study materials and links for students.</p>
-                    <a href="/admin/study-resources" class="btn btn-primary">Manage Resources</a>
+                    <p class="card-text small text-muted flex-grow-1">Upload and manage study materials and links for students.</p>
+                    <a href="/admin/study-resources" class="btn btn-sm btn-primary mt-auto d-block">Manage Resources</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">WiFi Credentials</h5>
-                    <p class="card-text">Update WiFi SSID, password, and disclaimer.</p>
-                    <a href="#" class="btn btn-primary disabled">Manage WiFi</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-cogs me-2"></i>System & Site Settings</h5>
-                    <p class="card-text">Manage WiFi, backups, and view admin action logs.</p>
-                    <a href="/admin/settings/wifi" class="btn btn-primary mb-2 d-block">Manage WiFi Settings</a>
-                    <a href="#" class="btn btn-secondary disabled d-block">Upload Backup (Soon)</a>
-                    <a href="/admin/action-logs" class="btn btn-info d-block mt-2">View Action Logs</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title"><i class="fas fa-file-alt me-2"></i>Content Management</h5>
-                    <p class="card-text">Manage public downloads and other site content.</p>
-                    <a href="/admin/documents" class="btn btn-primary d-block">Manage Downloads</a>
-                    <!-- <a href="#" class="btn btn-primary disabled d-block mt-2">Manage Gallery (Soon)</a> -->
+                    <p class="card-text small text-muted flex-grow-1">Manage public downloads and other site content like the gallery.</p>
+                    <a href="/admin/documents" class="btn btn-sm btn-primary d-block mb-2">Manage Downloads</a>
+                    <a href="#" class="btn btn-sm btn-secondary disabled d-block mt-auto">Manage Gallery (Soon)</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title"><i class="fas fa-cogs me-2"></i>System & Site Settings</h5>
+                    <p class="card-text small text-muted flex-grow-1">Manage WiFi, view admin action logs, and handle site backups.</p>
+                    <a href="/admin/settings/wifi" class="btn btn-sm btn-primary mb-2 d-block">Manage WiFi Settings</a>
+                    <a href="/admin/action-logs" class="btn btn-sm btn-info d-block mb-2">View Action Logs</a>
+                    <a href="#" class="btn btn-sm btn-secondary disabled d-block mt-auto">Upload Backup (Soon)</a>
                 </div>
             </div>
         </div>

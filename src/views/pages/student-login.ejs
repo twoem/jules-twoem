@@ -1,8 +1,8 @@
-<%- include('../partials/header', { title: 'Student Portal Login' }) %>
+<%- include('../partials/header', { title: 'Student Portal Login', page_styles: [{cssText: "body { background-image: url('/images/backgrounds/login-bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }"}] }) %>
 <%- include('../partials/navbar') %>
 
-<main class="container mt-5">
-    <div class="row justify-content-center">
+<main class="container mt-5 d-flex align-items-center justify-content-center flex-grow-1">
+    <div class="row justify-content-center w-100">
         <div class="col-md-8 col-lg-7">
             <div class="card shadow-sm">
                 <div class="card-header">
@@ -88,5 +88,22 @@
         </div>
     </div>
 </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const activeTabId = "<%= locals.activeTab || 'login-panel' %>";
+        const tabButton = document.querySelector(`#${activeTabId}-tab`);
+        if (tabButton) {
+            // Bootstrap 5 uses new bootstrap.Tab(tabButton).show();
+            // Ensure Bootstrap's JS is loaded for this to work.
+            // It is included in footer.ejs
+            var triggerEl = document.querySelector('#studentLoginTab button[data-bs-target="#' + activeTabId + '"]');
+            if(triggerEl) {
+                var tab = new bootstrap.Tab(triggerEl);
+                tab.show();
+            }
+        }
+    });
+</script>
 
 <%- include('../partials/footer') %>

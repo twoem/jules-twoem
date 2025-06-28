@@ -1,8 +1,8 @@
-<%- include('../partials/header', { title: 'Admin Login' }) %>
+<%- include('../partials/header', { title: 'Admin Login', page_styles: [{cssText: "body { background-image: url('/images/backgrounds/login-bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }"}] }) %>
 <%- include('../partials/navbar') %>
 
-<main class="container mt-5">
-    <div class="row justify-content-center">
+<main class="container mt-5 d-flex align-items-center justify-content-center flex-grow-1"> <%# Added flex-grow-1 to main %>
+    <div class="row justify-content-center w-100"> <%# Added w-100 to row for better centering if card is not full width %>
         <div class="col-md-6 col-lg-5">
             <div class="card shadow-sm">
                 <div class="card-body p-4">

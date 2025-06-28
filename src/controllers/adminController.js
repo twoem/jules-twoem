@@ -3,7 +3,7 @@ const db = require('../config/database');
 const { randomBytes } = require('crypto');
 const { body, validationResult } = require('express-validator');
 
-async function logAdminAction(admin_id, action_type, description, target_entity_type, target_entity_id, ip_address) { /* ... Existing ... */
+async function logAdminAction(admin_id, action_type, description, target_entity_type, target_entity_id, ip_address) { /* ... Full function from previous state ... */
     try {
         await db.runAsync(
             `INSERT INTO action_logs (admin_id, action_type, description, target_entity_type, target_entity_id, ip_address)
@@ -14,13 +14,15 @@ async function logAdminAction(admin_id, action_type, description, target_entity_
         console.error("Failed to log admin action:", logErr);
     }
 }
-const renderRegisterStudentForm = (req, res) => { /* ... Existing ... */
+
+const renderRegisterStudentForm = (req, res) => { /* ... Full function from previous state ... */
     res.render('pages/admin/register-student', {
         title: 'Register New Student',
         admin: req.admin, firstName: '', email: '',
     });
 };
-const registerStudent = async (req, res) => { /* ... Existing ... */
+
+const registerStudent = async (req, res) => { /* ... Full function from previous state ... */
     const { firstName, email } = req.body;
     const admin = req.admin;
     let errors = [];
@@ -62,7 +64,8 @@ const registerStudent = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/register-student');
     }
 };
-const listCourses = async (req, res) => { /* ... Existing ... */
+
+const listCourses = async (req, res) => { /* ... Full function from previous state ... */
     try {
         const courses = await db.allAsync("SELECT * FROM courses ORDER BY created_at DESC");
         res.render('pages/admin/courses/index', {
@@ -74,12 +77,12 @@ const listCourses = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/dashboard');
     }
 };
-const renderAddCourseForm = (req, res) => { /* ... Existing ... */
+const renderAddCourseForm = (req, res) => { /* ... Full function from previous state ... */
     res.render('pages/admin/courses/add', {
         title: 'Add New Course', admin: req.admin, errors: [], name: '', description: ''
     });
 };
-const addCourse = [ /* ... Existing ... */
+const addCourse = [ /* ... Full function from previous state ... */
     body('name').trim().notEmpty().withMessage('Course name is required.').isLength({ min: 3 }).withMessage('Course name must be at least 3 characters long.'),
     body('description').trim().optional({ checkFalsy: true }),
     async (req, res) => {
@@ -100,7 +103,7 @@ const addCourse = [ /* ... Existing ... */
         }
     }
 ];
-const renderEditCourseForm = async (req, res) => { /* ... Existing ... */
+const renderEditCourseForm = async (req, res) => { /* ... Full function from previous state ... */
     const courseId = req.params.id;
     try {
         const course = await db.getAsync("SELECT * FROM courses WHERE id = ?", [courseId]);
@@ -115,7 +118,7 @@ const renderEditCourseForm = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/courses');
     }
 };
-const updateCourse = [ /* ... Existing ... */
+const updateCourse = [ /* ... Full function from previous state ... */
     body('name').trim().notEmpty().withMessage('Course name is required.').isLength({ min: 3 }).withMessage('Course name must be at least 3 characters long.'),
     body('description').trim().optional({ checkFalsy: true }),
     async (req, res) => {
@@ -141,7 +144,7 @@ const updateCourse = [ /* ... Existing ... */
         }
     }
 ];
-const deleteCourse = async (req, res) => { /* ... Existing ... */
+const deleteCourse = async (req, res) => { /* ... Full function from previous state ... */
     const courseId = req.params.id;
     try {
         const enrollment = await db.getAsync("SELECT COUNT(id) as count FROM enrollments WHERE course_id = ?", [courseId]);
@@ -162,7 +165,7 @@ const deleteCourse = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/courses');
     }
 };
-const listStudents = async (req, res) => { /* ... Existing ... */
+const listStudents = async (req, res) => { /* ... Full function from previous state ... */
     try {
         const students = await db.allAsync("SELECT id, registration_number, first_name, email, created_at, last_login_at, is_active FROM students ORDER BY created_at DESC");
         res.render('pages/admin/students/index', { title: 'Manage Students', admin: req.admin, students });
@@ -172,7 +175,7 @@ const listStudents = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/dashboard');
     }
 };
-const viewStudentDetails = async (req, res) => { /* ... Existing ... */
+const viewStudentDetails = async (req, res) => { /* ... Full function from previous state ... */
     const studentId = req.params.id;
     try {
         const student = await db.getAsync("SELECT * FROM students WHERE id = ?", [studentId]);
@@ -192,7 +195,7 @@ const viewStudentDetails = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/students');
     }
 };
-const renderEditStudentForm = async (req, res) => { /* ... Existing ... */
+const renderEditStudentForm = async (req, res) => { /* ... Full function from previous state ... */
     const studentId = req.params.id;
     try {
         const student = await db.getAsync("SELECT * FROM students WHERE id = ?", [studentId]);
@@ -207,7 +210,7 @@ const renderEditStudentForm = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/students');
     }
 };
-const updateStudent = [ /* ... Existing ... */
+const updateStudent = [ /* ... Full function from previous state ... */
     body('firstName').trim().notEmpty().withMessage('First name is required.'),
     body('email').trim().isEmail().withMessage('Valid email is required.'),
     async (req, res) => {
@@ -240,7 +243,7 @@ const updateStudent = [ /* ... Existing ... */
         }
     }
 ];
-const toggleStudentStatus = async (req, res) => { /* ... Existing ... */
+const toggleStudentStatus = async (req, res) => { /* ... Full function from previous state ... */
     const studentId = req.params.id;
     try {
         const student = await db.getAsync("SELECT id, first_name, is_active FROM students WHERE id = ?", [studentId]);
@@ -260,7 +263,7 @@ const toggleStudentStatus = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/students');
     }
 };
-const renderManageStudentEnrollments = async (req, res) => { /* ... Existing ... */
+const renderManageStudentEnrollments = async (req, res) => { /* ... Full function from previous state ... */
     const studentId = req.params.studentId;
     try {
         const student = await db.getAsync("SELECT id, first_name, registration_number FROM students WHERE id = ?", [studentId]);
@@ -274,7 +277,7 @@ const renderManageStudentEnrollments = async (req, res) => { /* ... Existing ...
         res.redirect(`/admin/students/view/${studentId}`);
     }
 };
-const enrollStudentInCourse = async (req, res) => { /* ... Existing ... */
+const enrollStudentInCourse = async (req, res) => { /* ... Full function from previous state ... */
     const studentId = req.params.studentId;
     const { courseId } = req.body;
     if (!courseId) { req.flash('error_msg', 'Please select a course to enroll.'); return res.redirect(`/admin/students/${studentId}/enrollments`);}
@@ -295,7 +298,7 @@ const enrollStudentInCourse = async (req, res) => { /* ... Existing ... */
         res.redirect(`/admin/students/${studentId}/enrollments`);
     }
 };
-const removeStudentFromCourse = async (req, res) => { /* ... Existing ... */
+const removeStudentFromCourse = async (req, res) => { /* ... Full function from previous state ... */
     const enrollmentId = req.params.enrollmentId;
     const studentId = req.body.studentId;
     if (!studentId) { req.flash('error_msg', 'Student identifier missing.'); return res.redirect('/admin/students'); }
@@ -312,7 +315,7 @@ const removeStudentFromCourse = async (req, res) => { /* ... Existing ... */
         res.redirect(`/admin/students/${studentId}/enrollments`);
     }
 };
-const renderEnterMarksForm = async (req, res) => { /* ... Existing ... */
+const renderEnterMarksForm = async (req, res) => { /* ... Full function from previous state ... */
     const enrollmentId = req.params.enrollmentId;
     try {
         const enrollment = await db.getAsync("SELECT * FROM enrollments WHERE id = ?", [enrollmentId]);
@@ -329,7 +332,7 @@ const renderEnterMarksForm = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/students');
     }
 };
-const saveMarks = [ /* ... Existing ... */
+const saveMarks = [ /* ... Full function from previous state ... */
     body('coursework_marks').optional({ checkFalsy: true }).isInt({ min: 0, max: 100 }).withMessage('Coursework marks must be between 0 and 100.'),
     body('main_exam_marks').optional({ checkFalsy: true }).isInt({ min: 0, max: 100 }).withMessage('Main exam marks must be between 0 and 100.'),
     async (req, res) => {
@@ -648,7 +651,7 @@ const updateWifiSettings = [ /* ... Existing ... */
             const settingsData = await db.allAsync("SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN (?,?,?)", settingKeys).catch(() => []);
             const currentSettings = {};
             settingsData.forEach(row => { currentSettings[row.setting_key] = row.setting_value; });
-            return res.status(400).render('pages/admin/settings/wifi', { title: 'WiFi Settings Management', admin: req.admin, settings: { wifi_ssid, wifi_disclaimer }, errors: errors.array() }); // Pass current settings for form, not submitted ones
+            return res.status(400).render('pages/admin/settings/wifi', { title: 'WiFi Settings Management', admin: req.admin, settings: { wifi_ssid, wifi_disclaimer }, errors: errors.array() });
         }
         try {
             const upsertSetting = (key, value, desc, adminId) => db.runAsync( `INSERT INTO site_settings (setting_key, setting_value, description, updated_by_admin_id, updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_by_admin_id = excluded.updated_by_admin_id, updated_at = CURRENT_TIMESTAMP`, [key, value, desc, adminId] );
@@ -661,7 +664,7 @@ const updateWifiSettings = [ /* ... Existing ... */
                 updatedSettingsForLog.push('Password');
             }
             updates.push(upsertSetting('wifi_disclaimer', wifi_disclaimer || '', 'WiFi Usage Disclaimer', req.admin.id));
-            if (wifi_disclaimer || wifi_disclaimer === '') updatedSettingsForLog.push('Disclaimer'); // Log if it was explicitly set (even to empty)
+            if (wifi_disclaimer || wifi_disclaimer === '') updatedSettingsForLog.push('Disclaimer');
             await Promise.all(updates);
             logAdminAction(req.admin.id, 'WIFI_SETTINGS_UPDATED', `Admin ${req.admin.name} updated WiFi settings: ${updatedSettingsForLog.join(', ')}`, 'site_settings', null, req.ip);
             req.flash('success_msg', 'WiFi settings updated successfully.');
@@ -771,11 +774,30 @@ const deleteDocument = async (req, res) => { /* ... Existing ... */
         res.redirect('/admin/documents');
     }
 };
+const adminResetStudentPassword = async (req, res) => { /* ... Existing ... */
+    const studentId = req.params.studentId;
+    const adminPerformingAction = req.admin;
+    try {
+        const student = await db.getAsync("SELECT id, first_name, email FROM students WHERE id = ?", [studentId]);
+        if (!student) { req.flash('error_msg', 'Student not found.'); return res.redirect('/admin/students'); }
+        const defaultPassword = process.env.DEFAULT_STUDENT_PASSWORD;
+        if (!defaultPassword) { console.error("CRITICAL: DEFAULT_STUDENT_PASSWORD is not set in .env for admin password reset."); req.flash('error_msg', 'Server configuration error: Default student password not defined.'); return res.redirect(`/admin/students/view/${studentId}`); }
+        const passwordHash = await bcrypt.hash(defaultPassword, 10);
+        await db.runAsync( "UPDATE students SET password_hash = ?, requires_password_change = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [passwordHash, studentId] );
+        logAdminAction( adminPerformingAction.id, 'STUDENT_PASSWORD_RESET_BY_ADMIN', `Admin ${adminPerformingAction.name} reset password for student ${student.first_name} (ID: ${studentId}) to default.`, 'student', studentId, req.ip );
+        req.flash('success_msg', `Password for student ${student.first_name} has been reset to the default. They will be required to change it on next login.`);
+        res.redirect(`/admin/students/view/${studentId}`);
+    } catch (err) {
+        console.error("Error resetting student password by admin:", err);
+        req.flash('error_msg', 'Failed to reset student password. ' + err.message);
+        res.redirect(`/admin/students/view/${studentId}`);
+    }
+};
 
 // --- View Action Logs (Admin) ---
 const viewActionLogs = async (req, res) => {
     try {
-        const logs = await db.allAsync("SELECT * FROM action_logs ORDER BY created_at DESC LIMIT 100"); // Limit for now
+        const logs = await db.allAsync("SELECT * FROM action_logs ORDER BY created_at DESC LIMIT 100");
         res.render('pages/admin/action-logs', {
             title: 'Admin Action Logs',
             admin: req.admin,
@@ -799,56 +821,5 @@ module.exports = {
     listResources, renderCreateResourceForm, createResource, renderEditResourceForm, updateResource, deleteResource,
     renderWifiSettingsForm, updateWifiSettings,
     listDownloadableDocuments, renderCreateDocumentForm, createDocument, renderEditDocumentForm, updateDocument, deleteDocument,
-    viewActionLogs,
-    // New function for admin resetting student password
-    adminResetStudentPassword
-};
-
-// --- Admin-initiated Student Password Reset ---
-const adminResetStudentPassword = async (req, res) => {
-    const studentId = req.params.studentId;
-    const adminPerformingAction = req.admin; // from authAdmin middleware
-
-    try {
-        const student = await db.getAsync("SELECT id, first_name, email FROM students WHERE id = ?", [studentId]);
-        if (!student) {
-            req.flash('error_msg', 'Student not found.');
-            return res.redirect('/admin/students');
-        }
-
-        const defaultPassword = process.env.DEFAULT_STUDENT_PASSWORD;
-        if (!defaultPassword) {
-            console.error("CRITICAL: DEFAULT_STUDENT_PASSWORD is not set in .env for admin password reset.");
-            req.flash('error_msg', 'Server configuration error: Default student password not defined.');
-            return res.redirect(`/admin/students/view/${studentId}`);
-        }
-
-        const passwordHash = await bcrypt.hash(defaultPassword, 10);
-
-        await db.runAsync(
-            "UPDATE students SET password_hash = ?, requires_password_change = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-            [passwordHash, studentId]
-        );
-
-        logAdminAction(
-            adminPerformingAction.id,
-            'STUDENT_PASSWORD_RESET_BY_ADMIN',
-            `Admin ${adminPerformingAction.name} reset password for student ${student.first_name} (ID: ${studentId}) to default.`,
-            'student',
-            studentId,
-            req.ip
-        );
-
-        // Optionally, email the student that their password has been reset by an admin
-        // const { sendEmail } = require('../config/mailer');
-        // await sendEmail({ to: student.email, subject: 'Your Password Has Been Reset', html: `<p>Hello ${student.first_name},</p><p>Your password has been reset by an administrator to the default password: <strong>${defaultPassword}</strong>. You will be required to change it upon your next login.</p>` });
-
-        req.flash('success_msg', `Password for student ${student.first_name} has been reset to the default. They will be required to change it on next login.`);
-        res.redirect(`/admin/students/view/${studentId}`);
-
-    } catch (err) {
-        console.error("Error resetting student password by admin:", err);
-        req.flash('error_msg', 'Failed to reset student password. ' + err.message);
-        res.redirect(`/admin/students/view/${studentId}`);
-    }
+    viewActionLogs, adminResetStudentPassword
 };

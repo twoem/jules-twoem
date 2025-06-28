@@ -12,5 +12,12 @@
     <link rel="stylesheet" href="/css/style.css">
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <% if (typeof page_styles !== 'undefined' && page_styles.length > 0) { %>
+        <style>
+            <% page_styles.forEach(function(style) { %>
+                <%- style.cssText %>
+            <% }); %>
+        </style>
+    <% } %>
 </head>
 <body>

@@ -1,5 +1,22 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken'); // Ensure jwt is required
+
+// Helper function to get JWT secret
+const getJwtSecret = () => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret || secret.length < 32) {
+        console.error(
+            "CRITICAL SECURITY WARNING: JWT_SECRET is not defined, empty, or too short (less than 32 characters) in .env. " +
+            "Using a default development secret. THIS IS INSECURE AND MUST BE FIXED FOR PRODUCTION."
+        );
+        // This fallback is for development convenience ONLY.
+        // In a production environment, the application should ideally fail to start if JWT_SECRET is missing or insecure.
+        return process.env.NODE_ENV === 'production'
+            ? ' fallback_prod_secret_that_is_very_long_and_random_and_changed_immediately' // This should never be used in real prod
+            : 'dev_fallback_secret_must_be_long_and_random_at_least_32_chars';
+    }
+    return secret;
+};
 
 // Admin login logic
 const loginAdmin = async (req, res) => {
@@ -14,17 +31,14 @@ const loginAdmin = async (req, res) => {
 
     let authenticatedAdmin = null;
 
-    // Check against up to 3 admins from .env
     for (let i = 1; i <= 3; i++) {
         const adminEmail = process.env[`ADMIN${i}_EMAIL`];
         const adminPasswordHash = process.env[`ADMIN${i}_PASSWORD_HASH`];
         const adminName = process.env[`ADMIN${i}_NAME`];
 
         if (adminEmail === email) {
-            if (!adminPasswordHash || adminPasswordHash.startsWith("PLACEHOLDER_BCRYPT_HASH")) {
-                console.warn(`Admin ${i} email matched, but ADMIN${i}_PASSWORD_HASH is not a valid hash in .env.`);
-                // Optionally, prevent login if placeholder hash is detected
-                // return res.status(401).render('pages/admin-login', { title: 'Admin Login', error: 'Admin account not properly configured.' });
+            if (!adminPasswordHash || adminPasswordHash.startsWith("PLACEHOLDER_BCRYPT_HASH") || adminPasswordHash.length < 20) { // Added length check
+                console.warn(`Admin ${i} (${adminEmail}) email matched, but ADMIN${i}_PASSWORD_HASH is not a valid hash in .env.`);
                 continue;
             }
             try {
@@ -38,7 +52,7 @@ const loginAdmin = async (req, res) => {
                     break;
                 }
             } catch (compareError) {
-                console.error(`Error comparing hash for admin ${i}:`, compareError);
+                console.error(`Error comparing hash for admin ${i} (${adminEmail}):`, compareError);
             }
         }
     }
@@ -50,7 +64,6 @@ const loginAdmin = async (req, res) => {
         });
     }
 
-    // Generate JWT
     try {
         const token = jwt.sign(
             {
@@ -59,14 +72,14 @@ const loginAdmin = async (req, res) => {
                 name: authenticatedAdmin.name,
                 isAdmin: true
             },
-            process.env.JWT_SECRET,
+            getJwtSecret(), // Use helper function
             { expiresIn: process.env.JWT_EXPIRE || '1h' }
         );
 
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: parseInt(process.env.JWT_EXPIRE_MS || (1 * 60 * 60 * 1000).toString(), 10), // Default 1 hour in ms
+            maxAge: parseInt(process.env.JWT_EXPIRE_MS || (1 * 60 * 60 * 1000).toString(), 10),
             path: '/admin'
         });
 

@@ -15,49 +15,43 @@ const renderContactPage = (req, res) => {
     });
 };
 
-const { sendEmail } = require('../config/mailer');
+const { sendEmailWithTemplate } = require('../config/mailer'); // Use sendEmailWithTemplate
 
 // Handles contact form submission
 const handleContactForm = async (req, res) => {
     const { name, email: senderEmail, subject: userSubject, message: userMessage } = req.body;
 
-    // Validate inputs (basic example)
+    // Basic validation
     if (!name || !senderEmail || !userSubject || !userMessage) {
-        return res.redirect('/contact?error=Please+fill+in+all+fields.');
+        req.flash('error_msg', 'Please fill in all fields.');
+        return res.redirect('/contact');
     }
+    // More robust validation (e.g., email format) could be added here
 
-    const emailHtml = `
-        <p>You have a new contact form submission from <strong>${name}</strong> (${senderEmail}).</p>
-        <p><strong>Subject:</strong> ${userSubject}</p>
-        <p><strong>Message:</strong></p>
-        <p>${userMessage.replace(/\n/g, '<br>')}</p>
-        <hr>
-        <p>This email was sent from the contact form on the Twoem Online Productions website.</p>
-    `;
-
-    const emailSubject = `New Contact Form Submission: ${userSubject}`;
+    const emailSubject = `New Contact Form: ${userSubject} from ${name}`;
+    const emailData = {
+        senderName: name,
+        senderEmail: senderEmail,
+        emailSubject: userSubject, // Subject as entered by user
+        emailMessage: userMessage,
+        submissionDate: new Date().toLocaleString()
+    };
 
     try {
-        await sendEmail({
+        await sendEmailWithTemplate({
             to: process.env.CONTACT_RECEIVER_EMAIL,
-            subject: emailSubject,
-            html: emailHtml,
-            // As per prompt: "Reply-To automatically set to twoemcyber@gmail.com"
-            // and .env has REPLY_TO_EMAIL=twoemcyber@gmail.com
-            replyTo: process.env.REPLY_TO_EMAIL
+            subject: emailSubject, // Subject for the email received by admin
+            templateName: 'contact-form-submission', // New template
+            data: emailData,
+            replyTo: senderEmail // IMPORTANT: Set Reply-To to the client's email
         });
 
-        // The prompt also said: "Auto forwards to twoemcyber@gmail.com".
-        // The current setup sends *directly* to twoemcyber@gmail.com.
-        // If "auto-forwards" means it should first go to twoem.website@gmail.com and *then* be forwarded,
-        // that's a different setup (e.g. Gmail filter rule, or two sendEmail calls).
-        // The current implementation sends ONE email FROM twoem.website@gmail.com TO twoemcyber@gmail.com,
-        // with REPLY-TO set to twoemcyber@gmail.com. This matches the .env and "Reply-To automatically set to twoemcyber@gmail.com".
-
-        res.redirect('/contact?message=Thank+you+for+your+message!+It+has+been+sent.');
+        req.flash('success_msg', 'Thank you for your message! It has been sent successfully.');
+        res.redirect('/contact');
     } catch (error) {
         console.error('Failed to send contact email:', error);
-        res.redirect('/contact?error=Sorry,+there+was+an+error+sending+your+message.+Please+try+again+later.');
+        req.flash('error_msg', 'Sorry, there was an error sending your message. Please try again later.');
+        res.redirect('/contact');
     }
 };
 

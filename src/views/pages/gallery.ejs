@@ -12,32 +12,32 @@
     <div class="row mt-4 g-4">
         <%
         const galleryItems = [
-            { imgUrl: "https://via.placeholder.com/400x300.png?text=Quality+Prints", title: "Quality Printing Solutions", tags: ["Printing", "Design", "Brochures"], description: "Vibrant and professional printing for all your business and personal needs." },
-            { imgUrl: "https://via.placeholder.com/400x300.png?text=Computer+Class", title: "Empowering Through Education", tags: ["Education", "Computer Skills", "Community"], description: "Our students gaining hands-on experience in one of our computer training sessions." },
-            { imgUrl: "https://via.placeholder.com/400x300.png?text=Office+Support", title: "Efficient Office Services", tags: ["Office Support", "CV Writing", "Productivity"], description: "Providing reliable office support services to help you succeed." },
-            { imgUrl: "https://via.placeholder.com/400x300.png?text=Fast+Internet", title: "Reliable Internet Access", tags: ["Internet", "WiFi", "Connectivity"], description: "Stay connected with our high-speed internet and cyber cafe services." },
-            { imgUrl: "https://via.placeholder.com/400x300.png?text=Gov+Service+Help", title: "Government Service Assistance", tags: ["eCitizen", "Support", "KRA"], description: "Simplifying your access to essential government services online." },
-            { imgUrl: "https://via.placeholder.com/400x300.png?text=Twoem+Teamwork", title: "Dedicated to Our Community", tags: ["Team", "Service", "Twoem"], description: "The Twoem Online team is committed to providing excellent service." }
+            { imgPath: "/images/gallery/prints-showcase.jpg", title: "Quality Printing Solutions", tags: ["Printing", "Design", "Brochures"], description: "Vibrant and professional printing for all your business and personal needs. (Image: Placeholder - replace with actual print work)" },
+            { imgPath: "/images/gallery/computer-training.jpg", title: "Empowering Through Education", tags: ["Education", "Computer Skills", "Community"], description: "Our students gaining hands-on experience in one of our computer training sessions. (Image: Placeholder - replace with photo of students)" },
+            { imgPath: "/images/gallery/office-services.jpg", title: "Efficient Office Services", tags: ["Office Support", "CV Writing", "Productivity"], description: "Providing reliable office support services to help you succeed. (Image: Placeholder - replace with relevant image)" },
+            { imgPath: "/images/gallery/internet-access.jpg", title: "Reliable Internet Access", tags: ["Internet", "WiFi", "Connectivity"], description: "Stay connected with our high-speed internet and cyber cafe services. (Image: Placeholder - replace with photo of cyber cafe)" },
+            { imgPath: "/images/gallery/ecitizen-assistance.jpg", title: "Government Service Assistance", tags: ["eCitizen", "Support", "KRA"], description: "Simplifying your access to essential government services online. (Image: Placeholder - replace with relevant image)" },
+            { imgPath: "/images/gallery/twoem-community.jpg", title: "Dedicated to Our Community", tags: ["Team", "Service", "Community"], description: "The Twoem Online team is committed to providing excellent service. (Image: Placeholder - replace with team/community photo)" }
         ];
         %>
 
         <% galleryItems.forEach(function(item) { %>
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="card h-100 shadow-sm gallery-card">
-                    <img src="<%= item.imgUrl %>" class="card-img-top" alt="<%= item.title %>">
-                    <div class="card-body">
+                    <img src="<%= item.imgPath %>" class="card-img-top" alt="<%= item.title %>" style="height: 220px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title"><%= item.title %></h5>
-                        <p class="card-text small text-muted"><%= item.description %></p>
+                        <p class="card-text small text-muted flex-grow-1"><%= item.description %></p>
                     </div>
-                    <div class="card-footer bg-transparent border-top-0">
+                    <div class="card-footer bg-white"> <!-- Changed bg-transparent and border -->
                         <% item.tags.forEach(function(tag) { %>
-                            <span class="badge bg-primary me-1"><%= tag %></span>
+                            <span class="badge me-1"><%= tag %></span> <!-- Custom badge style will be applied via CSS -->
                         <% }); %>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        <% }); %>
+    </div> <!-- Row div closes AFTER the loop -->
     <!-- Add more gallery items or pagination as needed -->
 </main>
 

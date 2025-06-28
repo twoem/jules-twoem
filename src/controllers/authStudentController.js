@@ -7,16 +7,19 @@ const { body, validationResult } = require('express-validator');
 const loginStudent = async (req, res) => { /* ... जस का तस ... */
     const { registrationNumber, password } = req.body;
     if (!registrationNumber || !password) {
-        return res.status(400).render('pages/student-login', { title: 'Student Portal Login', error: 'Registration number and password are required.', activeTab: 'login-panel'});
+        req.flash('error', 'Registration number and password are required.');
+        return res.status(400).render('pages/student-login', { title: 'Student Portal Login', activeTab: 'login-panel'});
     }
     try {
         const student = await db.getAsync("SELECT * FROM students WHERE registration_number = ?", [registrationNumber]);
         if (!student) {
-            return res.status(401).render('pages/student-login', { title: 'Student Portal Login', error: 'Invalid registration number or password.', activeTab: 'login-panel'});
+            req.flash('error', 'Invalid registration number or password.');
+            return res.status(401).render('pages/student-login', { title: 'Student Portal Login', activeTab: 'login-panel'});
         }
         const isMatch = await bcrypt.compare(password, student.password_hash);
         if (!isMatch) {
-            return res.status(401).render('pages/student-login', { title: 'Student Portal Login', error: 'Invalid registration number or password.', activeTab: 'login-panel'});
+            req.flash('error', 'Invalid registration number or password.');
+            return res.status(401).render('pages/student-login', { title: 'Student Portal Login', activeTab: 'login-panel'});
         }
         await db.runAsync("UPDATE students SET last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [student.id]);
         const token = jwt.sign({ id: student.id, registrationNumber: student.registration_number, email: student.email, firstName: student.first_name }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '1h' });
@@ -26,7 +29,8 @@ const loginStudent = async (req, res) => { /* ... जस का तस ... */
         res.redirect('/student/dashboard');
     } catch (err) {
         console.error("Student login error:", err);
-        res.status(500).render('pages/student-login', { title: 'Student Portal Login', error: 'An error occurred during login. Please try again.', activeTab: 'login-panel'});
+        req.flash('error', 'An error occurred during login. Please try again.');
+        res.status(500).render('pages/student-login', { title: 'Student Portal Login', activeTab: 'login-panel'});
     }
 };
 const logoutStudent = (req, res) => { /* ... जस का तस ... */
@@ -40,14 +44,11 @@ const renderChangePasswordInitialForm = (req, res) => { /* ... जस का त
 const handleChangePasswordInitial = async (req, res) => { /* ... जस का तस ... */
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
     const studentId = req.student.id;
-    const renderWithError = (errorMsg) => {
-        req.flash('error_msg', errorMsg);
-        return res.redirect('/student/change-password-initial');
-    };
-    if (currentPassword !== process.env.DEFAULT_STUDENT_PASSWORD) return renderWithError('Incorrect current default password.');
-    if (newPassword.length < (parseInt(process.env.PASSWORD_MIN_LENGTH, 10) || 8)) return renderWithError(`New password must be at least ${process.env.PASSWORD_MIN_LENGTH || 8} characters long.`);
-    if (newPassword !== confirmNewPassword) return renderWithError('New passwords do not match.');
-    if (newPassword === process.env.DEFAULT_STUDENT_PASSWORD) return renderWithError('New password cannot be the same as the default password.');
+    const redirectUrl = '/student/change-password-initial';
+    if (currentPassword !== process.env.DEFAULT_STUDENT_PASSWORD) { req.flash('error_msg', 'Incorrect current default password.'); return res.redirect(redirectUrl); }
+    if (newPassword.length < (parseInt(process.env.PASSWORD_MIN_LENGTH, 10) || 8)) { req.flash('error_msg', `New password must be at least ${process.env.PASSWORD_MIN_LENGTH || 8} characters long.`); return res.redirect(redirectUrl); }
+    if (newPassword !== confirmNewPassword) { req.flash('error_msg', 'New passwords do not match.'); return res.redirect(redirectUrl); }
+    if (newPassword === process.env.DEFAULT_STUDENT_PASSWORD) { req.flash('error_msg', 'New password cannot be the same as the default password.'); return res.redirect(redirectUrl); }
     try {
         const newPasswordHash = await bcrypt.hash(newPassword, 10);
         await db.runAsync("UPDATE students SET password_hash = ?, requires_password_change = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [newPasswordHash, studentId]);
@@ -59,7 +60,7 @@ const handleChangePasswordInitial = async (req, res) => { /* ... जस का �
             req.flash('success_msg', 'Password changed successfully.');
             res.redirect('/student/dashboard');
         }
-    } catch (err) { console.error("Error changing initial password:", err); req.flash('error_msg', 'An error occurred while changing password.'); res.redirect('/student/change-password-initial');}
+    } catch (err) { console.error("Error changing initial password:", err); req.flash('error_msg', 'An error occurred while changing password.'); res.redirect(redirectUrl);}
 };
 const renderCompleteProfileInitialForm = (req, res) => { /* ... जस का तस ... */
     res.render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, nokName: '', nokRelationship: '', nokPhone: '', nokEmail: '' });
@@ -69,7 +70,8 @@ const handleCompleteProfileInitial = async (req, res) => { /* ... जस का 
     const studentId = req.student.id;
     if (!nokName || !nokRelationship || !nokPhone) {
         req.flash('error_msg', 'Please fill in all required Next of Kin details (Name, Relationship, Phone).');
-        return res.status(400).render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, error: req.flash('error_msg'), nokName, nokRelationship, nokPhone, nokEmail });
+        // Re-render with values and error
+        return res.status(400).render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, nokName, nokRelationship, nokPhone, nokEmail });
     }
     const nokDetails = JSON.stringify({ name: nokName, relationship: nokRelationship, phone: nokPhone, email: nokEmail });
     try {
@@ -79,7 +81,7 @@ const handleCompleteProfileInitial = async (req, res) => { /* ... जस का 
     } catch (err) {
         console.error("Error completing initial profile:", err);
         req.flash('error_msg', 'An error occurred while saving your profile.');
-        res.status(500).render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, error: req.flash('error_msg'), nokName, nokRelationship, nokPhone, nokEmail });
+         res.status(500).render('pages/student/complete-profile-initial', { title: 'Complete Your Profile', student: req.student, nokName, nokRelationship, nokPhone, nokEmail });
     }
 };
 function generateOtp() { /* ... जस का तस ... */
@@ -89,51 +91,102 @@ function generateOtp() { /* ... जस का तस ... */
 const handleForgotPassword = async (req, res) => { /* ... जस का तस ... */
     const { registrationNumber, email } = req.body;
     const activeTabOnError = 'forgot-password-panel';
-    if (!registrationNumber || !email) { return res.status(400).render('pages/student-login', { title: 'Student Portal Login', error: 'Registration number and email are required for password reset.', activeTab: activeTabOnError }); }
+    const loginRedirectUrl = `/student/login?activeTab=${activeTabOnError}#${activeTabOnError}`;
+
+    if (!registrationNumber || !email) {
+        req.flash('error', 'Registration number and email are required.');
+        return res.redirect(loginRedirectUrl);
+    }
     try {
-        const student = await db.getAsync("SELECT id, email, first_name FROM students WHERE registration_number = ? AND email = ?", [registrationNumber, email.toLowerCase().trim()]);
-        if (!student) { return res.status(404).render('pages/student-login', { title: 'Student Portal Login', error: 'No student found with that registration number and email address.', activeTab: activeTabOnError }); }
+        const student = await db.getAsync("SELECT id, email, first_name FROM students WHERE registration_number = ? AND lower(email) = lower(?)", [registrationNumber, email.trim()]);
+        if (!student) {
+            req.flash('error', 'No student found with that registration number and email address.');
+            return res.redirect(loginRedirectUrl);
+        }
         const otp = generateOtp();
         const otpHash = await bcrypt.hash(otp, 10);
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
         await db.runAsync("INSERT INTO password_reset_tokens (student_id, token_hash, expires_at) VALUES (?, ?, ?)", [student.id, otpHash, expiresAt.toISOString()]);
-        const { sendEmail } = require('../config/mailer');
-        const emailHtml = `<p>Hello ${student.first_name},</p><p>Your OTP for password reset is: <strong>${otp}</strong></p><p>This OTP is valid for 10 minutes.</p>`;
-        await sendEmail({ to: student.email, subject: "Your Password Reset OTP", html: emailHtml });
+
+        const { sendEmailWithTemplate } = require('../config/mailer');
+        const emailSubject = "Your Password Reset OTP - Twoem Online Productions";
+        const emailData = { studentName: student.first_name, otp: otp };
+        await sendEmailWithTemplate({ to: student.email, subject: emailSubject, templateName: 'otp-email', data: emailData });
+
         req.flash('success_msg', 'OTP sent to your email. Please check your inbox.');
         res.redirect(`/student/reset-password-form?regNo=${encodeURIComponent(registrationNumber)}`);
-    } catch (err) { console.error("Forgot password error:", err); req.flash('error_msg', 'An error occurred. Please try again.'); res.redirect('/student/login#forgot-password-panel'); }
+    } catch (err) {
+        console.error("Forgot password error:", err);
+        req.flash('error', 'An error occurred. Please try again.');
+        res.redirect(loginRedirectUrl);
+    }
 };
 const renderResetPasswordForm = (req, res) => { /* ... जस का तस ... */
-    const { regNo, message, error } = req.query;
-    if (!regNo) return res.redirect('/student/login?error=Invalid+password+reset+link.');
-    res.render('pages/student/reset-password-form', { title: 'Reset Your Password', registrationNumber: regNo, message, error, passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8 });
+    const { regNo } = req.query; // Removed message, error as they come from flash
+    if (!regNo) {
+        req.flash('error_msg', 'Invalid password reset link or session.');
+        return res.redirect('/student/login');
+    }
+    res.render('pages/student/reset-password-form', { title: 'Reset Your Password', registrationNumber: regNo, passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8 });
 };
 const handleResetPassword = async (req, res) => { /* ... जस का तस ... */
     const { registrationNumber, otp, newPassword, confirmNewPassword } = req.body;
-    const renderErrorOnResetForm = (errorMsg) => {
-        req.flash('error_msg', errorMsg);
-        return res.redirect(`/student/reset-password-form?regNo=${encodeURIComponent(registrationNumber)}`);
-    };
-    if (!registrationNumber || !otp || !newPassword || !confirmNewPassword) return renderErrorOnResetForm('All fields are required.');
-    if (newPassword.length < (parseInt(process.env.PASSWORD_MIN_LENGTH, 10) || 8)) return renderErrorOnResetForm(`New password must be at least ${process.env.PASSWORD_MIN_LENGTH || 8} characters.`);
-    if (newPassword !== confirmNewPassword) return renderErrorOnResetForm('New passwords do not match.');
+    const errorRedirectUrl = `/student/reset-password-form?regNo=${encodeURIComponent(registrationNumber)}`;
+
+    if (!registrationNumber || !otp || !newPassword || !confirmNewPassword) { req.flash('error_msg', 'All fields are required.'); return res.redirect(errorRedirectUrl); }
+    if (newPassword.length < (parseInt(process.env.PASSWORD_MIN_LENGTH, 10) || 8)) { req.flash('error_msg', `New password must be at least ${process.env.PASSWORD_MIN_LENGTH || 8} characters.`); return res.redirect(errorRedirectUrl); }
+    if (newPassword !== confirmNewPassword) { req.flash('error_msg', 'New passwords do not match.'); return res.redirect(errorRedirectUrl); }
     try {
         const student = await db.getAsync("SELECT id FROM students WHERE registration_number = ?", [registrationNumber]);
-        if (!student) return renderErrorOnResetForm('Invalid registration number.');
+        if (!student) { req.flash('error_msg', 'Invalid registration number.'); return res.redirect(errorRedirectUrl); }
         const tokenRecord = await db.getAsync("SELECT * FROM password_reset_tokens WHERE student_id = ? AND used = FALSE ORDER BY created_at DESC LIMIT 1", [student.id]);
-        if (!tokenRecord) return renderErrorOnResetForm('No pending OTP found or already used.');
+        if (!tokenRecord) { req.flash('error_msg', 'No pending OTP found or already used.'); return res.redirect(errorRedirectUrl); }
         const isOtpMatch = await bcrypt.compare(otp, tokenRecord.token_hash);
-        if (!isOtpMatch) return renderErrorOnResetForm('Invalid OTP.');
-        if (new Date() > new Date(tokenRecord.expires_at)) { await db.runAsync("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [tokenRecord.id]); return renderErrorOnResetForm('OTP has expired.'); }
-        const studentDetails = await db.getAsync("SELECT requires_password_change FROM students WHERE id = ?", [student.id]);
-        if (studentDetails.requires_password_change && newPassword === process.env.DEFAULT_STUDENT_PASSWORD) return renderErrorOnResetForm('New password cannot be the default password.');
+        if (!isOtpMatch) { req.flash('error_msg', 'Invalid OTP.'); return res.redirect(errorRedirectUrl); }
+        if (new Date() > new Date(tokenRecord.expires_at)) { await db.runAsync("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [tokenRecord.id]); req.flash('error_msg', 'OTP has expired.'); return res.redirect(errorRedirectUrl); }
+
+        const studentDetails = await db.getAsync("SELECT password_hash, requires_password_change FROM students WHERE id = ?", [student.id]);
+        const isStillOnDefault = await bcrypt.compare(process.env.DEFAULT_STUDENT_PASSWORD, studentDetails.password_hash);
+        if (isStillOnDefault && newPassword === process.env.DEFAULT_STUDENT_PASSWORD) {
+             req.flash('error_msg', 'New password cannot be the default password if you are resetting from it.'); return res.redirect(errorRedirectUrl);
+        }
+
         const newPasswordHash = await bcrypt.hash(newPassword, 10);
         await db.runAsync("UPDATE students SET password_hash = ?, requires_password_change = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [newPasswordHash, student.id]);
         await db.runAsync("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", [tokenRecord.id]);
         req.flash('success_msg', 'Password reset successfully. You can now login.');
         res.redirect('/student/login');
-    } catch (err) { console.error("Error resetting password:", err); req.flash('error_msg', 'An error occurred. Please try again.'); res.redirect(`/student/reset-password-form?regNo=${encodeURIComponent(registrationNumber)}`);}
+    } catch (err) { console.error("Error resetting password:", err); req.flash('error_msg', 'An error occurred. Please try again.'); res.redirect(errorRedirectUrl);}
+};
+const listMyNotifications = async (req, res) => { /* ... जस का तस ... */
+    const studentId = req.student.id;
+    try {
+        const enrolledCourses = await db.allAsync("SELECT course_id FROM enrollments WHERE student_id = ?", [studentId]);
+        const enrolledCourseIds = enrolledCourses.map(ec => ec.course_id);
+        let queryParams = [studentId, studentId];
+        let coursePlaceholders = '';
+        if (enrolledCourseIds.length > 0) {
+            coursePlaceholders = `OR (n.target_audience_type = 'course_id' AND n.target_audience_identifier IN (${enrolledCourseIds.map(() => '?').join(',')}))`;
+            queryParams.push(...enrolledCourseIds);
+        }
+        const notifications = await db.allAsync( `SELECT n.*, snr.read_at FROM notifications n LEFT JOIN student_notification_reads snr ON n.id = snr.notification_id AND snr.student_id = ? WHERE n.target_audience_type = 'all' OR (n.target_audience_type = 'student_id' AND n.target_audience_identifier = ?) ${coursePlaceholders} ORDER BY n.created_at DESC`, queryParams );
+        res.render('pages/student/notifications', { title: 'My Notifications', student: req.student, notifications });
+    } catch (err) { console.error("Error fetching student notifications:", err); req.flash('error_msg', 'Could not retrieve notifications.'); res.redirect('/student/dashboard'); }
+};
+const markNotificationAsRead = async (req, res) => { /* ... जस का तस ... */
+    const studentId = req.student.id;
+    const notificationId = req.params.notificationId;
+    try {
+        const existingRead = await db.getAsync( "SELECT id FROM student_notification_reads WHERE student_id = ? AND notification_id = ?", [studentId, notificationId] );
+        if (!existingRead) {
+            await db.runAsync( "INSERT INTO student_notification_reads (student_id, notification_id) VALUES (?, ?)", [studentId, notificationId] );
+        }
+        res.redirect('/student/notifications');
+    } catch (err) {
+        console.error("Error marking notification as read:", err);
+        req.flash('error_msg', 'Could not mark notification as read.');
+        res.redirect('/student/notifications');
+    }
 };
 const listMyStudyResources = async (req, res) => { /* ... जस का तस ... */
     const studentId = req.student.id;
@@ -217,16 +270,14 @@ const downloadCertificate = async (req, res) => { /* ... जस का तस ..
         res.render('pages/student/certificate-template', { layout: 'partials/certificate-layout', title: `Certificate - ${enrollment.course_name}`, student_name: enrollment.student_name, course_name: enrollment.course_name, registration_number: enrollment.registration_number, completion_date: new Date(enrollment.completion_date).toLocaleDateString() });
     } catch (err) { console.error("Error generating certificate:", err); req.flash('error_msg', 'Could not generate certificate.'); res.redirect('/student/my-certificates'); }
 };
-
-// --- Student Self-Service Profile Updates ---
-const renderChangePasswordForm = (req, res) => { /* ... New ... */
+const renderChangePasswordForm = (req, res) => { /* ... जस का तस ... */
     res.render('pages/student/profile/change-password', {
         title: 'Change Password',
         student: req.student,
         passwordMinLength: process.env.PASSWORD_MIN_LENGTH || 8
     });
 };
-const handleChangePassword = async (req, res) => { /* ... New ... */
+const handleChangePassword = async (req, res) => { /* ... जस का तस ... */
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
     const studentId = req.student.id;
     if (!currentPassword || !newPassword || !confirmNewPassword) { req.flash('error_msg', 'All password fields are required.'); return res.redirect('/student/profile/change-password'); }
@@ -245,7 +296,7 @@ const handleChangePassword = async (req, res) => { /* ... New ... */
         res.redirect('/student/dashboard');
     } catch (err) { console.error("Error changing student password:", err); req.flash('error_msg', 'An error occurred while changing your password.'); res.redirect('/student/profile/change-password'); }
 };
-const renderEditNokForm = async (req, res) => { /* ... New ... */
+const renderEditNokForm = async (req, res) => { /* ... जस का तस ... */
     const studentId = req.student.id;
     try {
         const student = await db.getAsync("SELECT next_of_kin_details FROM students WHERE id = ?", [studentId]);
@@ -254,7 +305,7 @@ const renderEditNokForm = async (req, res) => { /* ... New ... */
         res.render('pages/student/profile/edit-nok', { title: 'Update Next of Kin Details', student: req.student, currentNokDetails });
     } catch (err) { console.error("Error fetching student NOK details for edit form:", err); req.flash('error_msg', 'Could not load your Next of Kin details.'); res.redirect('/student/dashboard'); }
 };
-const handleUpdateNok = async (req, res) => { /* ... New ... */
+const handleUpdateNok = async (req, res) => { /* ... जस का तस ... */
     const { nokName, nokRelationship, nokPhone, nokEmail } = req.body;
     const studentId = req.student.id;
     if (!nokName || !nokRelationship || !nokPhone) { req.flash('error_msg', 'Please fill in all required Next of Kin fields (Name, Relationship, Phone).'); return res.redirect('/student/profile/edit-nok'); }
@@ -266,22 +317,49 @@ const handleUpdateNok = async (req, res) => { /* ... New ... */
     } catch (err) { console.error("Error updating student NOK details:", err); req.flash('error_msg', 'An error occurred while updating your Next of Kin details.'); res.redirect('/student/profile/edit-nok'); }
 };
 
-// --- Student Portal - Notifications (Mark as Read) ---
-const markNotificationAsRead = async (req, res) => { /* ... Modified listMyNotifications and this new one ... */
-    const studentId = req.student.id;
-    const notificationId = req.params.notificationId;
+// --- Student Credential Retrieval ---
+const retrieveStudentCredentials = async (req, res) => {
+    const { email, firstName } = req.body;
+    const activeTab = 'new-student-panel';
+    const errorRedirectUrl = `/student/login?activeTab=${activeTab}#${activeTab}`;
+    const successRedirectUrl = `/student/login?activeTab=${activeTab}#${activeTab}`;
+
+    if (!email || !firstName) {
+        req.flash('error', 'Email and First Name are required.');
+        return res.redirect(errorRedirectUrl);
+    }
+
     try {
-        const existingRead = await db.getAsync( "SELECT id FROM student_notification_reads WHERE student_id = ? AND notification_id = ?", [studentId, notificationId] );
-        if (!existingRead) {
-            await db.runAsync( "INSERT INTO student_notification_reads (student_id, notification_id) VALUES (?, ?)", [studentId, notificationId] );
+        const student = await db.getAsync(
+            "SELECT id, registration_number, requires_password_change, credentials_retrieved_once FROM students WHERE lower(email) = lower(?) AND lower(first_name) = lower(?)",
+            [email.trim(), firstName.trim()]
+        );
+
+        if (!student) {
+            req.flash('error', 'No matching student record found with the provided details.');
+            return res.redirect(errorRedirectUrl);
         }
-        // No flash message needed if it's an AJAX call or background action.
-        // If it's a direct POST from a form, redirect is fine.
-        res.redirect('/student/notifications');
+
+        if (!student.requires_password_change) {
+            req.flash('error', 'Account setup already completed. Please use the login or forgot password options.');
+            return res.redirect(errorRedirectUrl);
+        }
+
+        if (student.credentials_retrieved_once) {
+            req.flash('error', 'Initial credentials have already been retrieved for this account. Please use the "Forgot Password" option if needed.');
+            return res.redirect(errorRedirectUrl);
+        }
+
+        await db.runAsync("UPDATE students SET credentials_retrieved_once = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [student.id]);
+
+        const successMessage = `Your credentials: <br>Registration Number: <strong>${student.registration_number}</strong><br>Default Password: <strong>${process.env.DEFAULT_STUDENT_PASSWORD}</strong><br>Please login and change your password immediately.`;
+        req.flash('success_msg', successMessage);
+        return res.redirect(successRedirectUrl);
+
     } catch (err) {
-        console.error("Error marking notification as read:", err);
-        req.flash('error_msg', 'Could not mark notification as read.'); // This might not be seen if it's AJAX
-        res.redirect('/student/notifications');
+        console.error("Error retrieving student credentials:", err);
+        req.flash('error', 'An error occurred. Please try again.');
+        return res.redirect(errorRedirectUrl);
     }
 };
 
@@ -292,9 +370,10 @@ module.exports = {
     renderCompleteProfileInitialForm, handleCompleteProfileInitial,
     handleForgotPassword, renderResetPasswordForm, handleResetPassword,
     viewMyAcademics, viewMyFees,
-    listMyNotifications, markNotificationAsRead, // Added markNotificationAsRead
+    listMyNotifications, markNotificationAsRead,
     listMyStudyResources, viewWifiCredentials,
     renderMyCertificatesPage, downloadCertificate,
     renderChangePasswordForm, handleChangePassword,
-    renderEditNokForm, handleUpdateNok
+    renderEditNokForm, handleUpdateNok,
+    retrieveStudentCredentials
 };

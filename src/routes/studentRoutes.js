@@ -25,6 +25,9 @@ router.get('/login', (req, res) => {
 // POST Student login
 router.post('/login', authStudentController.loginStudent);
 
+// POST Student Retrieve Credentials
+router.post('/retrieve-credentials', authStudentController.retrieveStudentCredentials);
+
 // GET Student dashboard (protected)
 router.get('/dashboard', authStudent, (req, res) => {
     // req.student should be populated by authStudent middleware

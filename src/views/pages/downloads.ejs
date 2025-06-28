@@ -1,19 +1,25 @@
 <%- include('../partials/header', { title: 'Downloads' }) %>
 <%- include('../partials/navbar') %>
 
-<main class="container mt-5">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="mb-4">Downloads</h1>
-            <p class="lead">Find public documents and other resources available for download.</p>
+<main class="pt-0"> <!-- Remove mt-5 if using full-width header image -->
+    <!-- Optional Header Image for Downloads Page -->
+    <div class="container-fluid px-0 mb-5">
+        <div style="background: url('/images/downloads/downloads-header.jpg') no-repeat center center; background-size: cover; height: 30vh; display: flex; align-items: center; justify-content: center; text-align: center;">
+            <h1 class="display-4 fw-bold text-white page-title-hero" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.7);">Downloads</h1>
+        </div>
+    </div>
 
-            <h3 class="mt-5">Public Documents</h3>
-            <p>Curriculum guides, forms, and other general information.</p>
-            <p class="lead">Find public documents and other resources available for download.</p>
+    <div class="container"> <%# Content container starts here %>
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="lead mb-5">Find public documents, eulogies, and other resources available for download from Twoem Online Productions.</p>
 
-            <%- include('../partials/flash-messages') %> <% /* For error_msg from controller */ %>
-
-            <h3 class="mt-5"><i class="fas fa-file-alt text-primary me-2"></i>Public Documents</h3>
+                <%- include('../partials/flash-messages') %> <% /* For error_msg from controller */ %>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <h3 class="mt-0 mb-3"><i class="fas fa-file-alt text-primary me-2"></i>Public Documents</h3>
             <% if (publicDocs && publicDocs.length > 0) { %>
                 <div class="list-group mb-4 shadow-sm">
                     <% publicDocs.forEach(function(doc) { %>

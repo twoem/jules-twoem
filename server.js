@@ -59,8 +59,35 @@ app.use('/admin', adminRoutes); // Mount admin routes under /admin prefix
 const studentRoutes = require('./src/routes/studentRoutes'); // Import student routes
 app.use('/student', studentRoutes); // Mount student routes under /student prefix
 
+// Catch 404 and forward to error handler
+app.use((req, res, next) => {
+    res.status(404).render('pages/errors/404', {
+        title: 'Page Not Found',
+        url: req.originalUrl,
+        // Pass a minimal user object if navbar expects it, or handle absence in navbar
+        admin: req.admin || null,
+        student: req.student || null
+    });
+});
+
+// TODO: Add a more generic error handler (for 500 errors etc.)
+// This should ideally be the VERY last middleware.
+// app.use((err, req, res, next) => {
+//     console.error(err.stack);
+//     // Check if headers have already been sent
+//     if (res.headersSent) {
+//         return next(err);
+//     }
+//     res.status(err.status || 500).render('pages/errors/500', { // Assuming 500.ejs exists
+//         title: 'Server Error',
+//         error: process.env.NODE_ENV === 'development' ? err : {}, // Only show error details in dev
+//         admin: req.admin || null,
+//         student: req.student || null
+//     });
+// });
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-    console.log(`Default student pass: ${process.env.DEFAULT_STUDENT_PASSWORD}`); // For testing .env loading
+    // console.log(`Default student pass: ${process.env.DEFAULT_STUDENT_PASSWORD}`); // Removed for cleaner logs
 });
