@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "echo \"Build completed\"",
+    "postinstall": "echo \"Dependencies installed successfully\""
   },
   "repository": {
     "type": "git",

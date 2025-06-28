@@ -1,109 +1,217 @@
-<%- include('../partials/header', { title: 'Student Portal Login', page_styles: [{cssText: "body { background-image: url('/images/backgrounds/login-bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }"}] }) %>
+<%- include('../partials/header', { title: 'Student Portal Login', page_styles: [{cssText: `
+    body {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        min-height: 100vh;
+    }
+    .login-wrapper {
+        min-height: calc(100vh - 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    .student-login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        position: relative;
+    }
+    .student-login-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    .modern-tabs {
+        border: none;
+        background: transparent;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+    .modern-tabs .nav-link {
+        border: none;
+        background: transparent;
+        color: #718096;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    .modern-tabs .nav-link.active {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    }
+    .modern-tabs .nav-link:hover {
+        background: rgba(79, 172, 254, 0.1);
+        color: #4facfe;
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .login-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+`}] }) %>
 <%- include('../partials/navbar') %>
 
-<main class="container mt-5 d-flex align-items-center justify-content-center flex-grow-1">
-    <div class="row justify-content-center w-100">
-        <div class="col-md-8 col-lg-7">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <ul class="nav nav-tabs card-header-tabs" id="studentLoginTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab" aria-controls="login-panel" aria-selected="true">Login</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="forgot-password-tab" data-bs-toggle="tab" data-bs-target="#forgot-password-panel" type="button" role="tab" aria-controls="forgot-password-panel" aria-selected="false">Forgot Password</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="new-student-tab" data-bs-toggle="tab" data-bs-target="#new-student-panel" type="button" role="tab" aria-controls="new-student-panel" aria-selected="false">New Student?</button>
-                        </li>
-                    </ul>
-                </div>
-                <div class="card-body p-4">
-                    <!-- Placeholder for messages -->
-                    <% if (typeof message !== 'undefined' && message) { %>
-                        <div class="alert alert-info"><%= message %></div>
-                    <% } %>
-                    <% if (typeof error !== 'undefined' && error) { %>
-                        <div class="alert alert-danger"><%= error %></div>
-                    <% } %>
-
-                    <div class="tab-content" id="studentLoginTabContent">
-                        <!-- Login Panel -->
-                        <div class="tab-pane fade show active" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
-                            <h4 class="mb-3">Student Login</h4>
-                            <form action="/student/login" method="POST"> <!-- Actual action/logic to be implemented later -->
-                                <div class="mb-3">
-                                    <label for="registrationNumber" class="form-label">Registration Number</label>
-                                    <input type="text" class="form-control" id="registrationNumber" name="registrationNumber" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="password" name="password" required>
-                                </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary">Login</button>
-                                </div>
-                            </form>
+<div class="login-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7 col-xl-6">
+                <div class="card student-login-card">
+                    <div class="card-body p-5">
+                        <div class="login-header">
+                            <div class="login-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h2 class="login-title">Student Portal</h2>
+                            <p class="login-subtitle">Access your learning dashboard</p>
                         </div>
 
-                        <!-- Forgot Password Panel -->
-                        <div class="tab-pane fade" id="forgot-password-panel" role="tabpanel" aria-labelledby="forgot-password-tab">
-                            <h4 class="mb-3">Forgot Password</h4>
-                            <form action="/student/forgot-password" method="POST"> <!-- Actual action/logic to be implemented later -->
-                                <div class="mb-3">
-                                    <label for="forgotRegNum" class="form-label">Registration Number</label>
-                                    <input type="text" class="form-control" id="forgotRegNum" name="registrationNumber" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="forgotEmail" class="form-label">Registered Email Address</label>
-                                    <input type="email" class="form-control" id="forgotEmail" name="email" required>
-                                </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-warning">Send Reset Code</button>
-                                </div>
-                            </form>
-                        </div>
+                        <ul class="nav nav-tabs modern-tabs justify-content-center" id="studentLoginTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-panel" type="button" role="tab">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="forgot-password-tab" data-bs-toggle="tab" data-bs-target="#forgot-password-panel" type="button" role="tab">
+                                    <i class="fas fa-key me-2"></i>Reset Password
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="new-student-tab" data-bs-toggle="tab" data-bs-target="#new-student-panel" type="button" role="tab">
+                                    <i class="fas fa-user-plus me-2"></i>New Student
+                                </button>
+                            </li>
+                        </ul>
 
-                        <!-- New Student Panel -->
-                        <div class="tab-pane fade" id="new-student-panel" role="tabpanel" aria-labelledby="new-student-tab">
-                            <h4 class="mb-3">New Student? Retrieve Credentials</h4>
-                            <p class="text-muted small">If you have been registered by an admin but haven't received your login details, retrieve them here.</p>
-                            <form action="/student/retrieve-credentials" method="POST"> <!-- Actual action/logic to be implemented later -->
-                                <div class="mb-3">
-                                    <label for="newStudentEmail" class="form-label">Your Email Address</label>
-                                    <input type="email" class="form-control" id="newStudentEmail" name="email" required>
+                        <div class="tab-content" id="studentLoginTabContent">
+
+                        <div class="tab-content" id="studentLoginTabContent">
+                            <!-- Login Panel -->
+                            <div class="tab-pane fade show active" id="login-panel" role="tabpanel">
+                                <form action="/student/login" method="POST" id="studentLoginForm">
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="registrationNumber" name="registrationNumber" placeholder="Registration Number" required>
+                                        <label for="registrationNumber"><i class="fas fa-id-badge me-2"></i>Registration Number</label>
+                                    </div>
+
+                                    <div class="form-floating mb-4">
+                                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                        <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary login-btn">
+                                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Forgot Password Panel -->
+                            <div class="tab-pane fade" id="forgot-password-panel" role="tabpanel">
+                                <form action="/student/forgot-password" method="POST" id="forgotPasswordForm">
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="forgotRegNum" name="registrationNumber" placeholder="Registration Number" required>
+                                        <label for="forgotRegNum"><i class="fas fa-id-badge me-2"></i>Registration Number</label>
+                                    </div>
+
+                                    <div class="form-floating mb-4">
+                                        <input type="email" class="form-control" id="forgotEmail" name="email" placeholder="Email Address" required>
+                                        <label for="forgotEmail"><i class="fas fa-envelope me-2"></i>Email Address</label>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-warning login-btn">
+                                            <i class="fas fa-paper-plane me-2"></i>Send Reset Code
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- New Student Panel -->
+                            <div class="tab-pane fade" id="new-student-panel" role="tabpanel">
+                                <div class="text-center mb-4">
+                                    <p class="text-muted">If you've been registered but haven't received your login details, retrieve them here.</p>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="newStudentFirstName" class="form-label">Your First Name</label>
-                                    <input type="text" class="form-control" id="newStudentFirstName" name="firstName" required>
-                                </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-info">Get My Login Details</button>
-                                </div>
-                            </form>
+
+                                <form action="/student/retrieve-credentials" method="POST" id="retrieveCredentialsForm">
+                                    <div class="form-floating mb-3">
+                                        <input type="email" class="form-control" id="newStudentEmail" name="email" placeholder="Email Address" required>
+                                        <label for="newStudentEmail"><i class="fas fa-envelope me-2"></i>Email Address</label>
+                                    </div>
+
+                                    <div class="form-floating mb-4">
+                                        <input type="text" class="form-control" id="newStudentFirstName" name="firstName" placeholder="First Name" required>
+                                        <label for="newStudentFirstName"><i class="fas fa-user me-2"></i>First Name</label>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-info login-btn">
+                                            <i class="fas fa-search me-2"></i>Get My Login Details
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const activeTabId = "<%= locals.activeTab || 'login-panel' %>";
-        const tabButton = document.querySelector(`#${activeTabId}-tab`);
-        if (tabButton) {
-            // Bootstrap 5 uses new bootstrap.Tab(tabButton).show();
-            // Ensure Bootstrap's JS is loaded for this to work.
-            // It is included in footer.ejs
-            var triggerEl = document.querySelector('#studentLoginTab button[data-bs-target="#' + activeTabId + '"]');
-            if(triggerEl) {
-                var tab = new bootstrap.Tab(triggerEl);
-                tab.show();
-            }
+document.addEventListener('DOMContentLoaded', function () {
+    const activeTabId = "<%= locals.activeTab || 'login-panel' %>";
+    const tabButton = document.querySelector(`#${activeTabId}-tab`);
+    if (tabButton) {
+        var triggerEl = document.querySelector('#studentLoginTab button[data-bs-target="#' + activeTabId + '"]');
+        if(triggerEl) {
+            var tab = new bootstrap.Tab(triggerEl);
+            tab.show();
         }
+    }
+
+    // Form submission handlers
+    document.getElementById('studentLoginForm').addEventListener('submit', function(e) {
+        const button = this.querySelector('button[type="submit"]');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
+        button.disabled = true;
     });
+
+    document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
+        const button = this.querySelector('button[type="submit"]');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        button.disabled = true;
+    });
+
+    document.getElementById('retrieveCredentialsForm').addEventListener('submit', function(e) {
+        const button = this.querySelector('button[type="submit"]');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+        button.disabled = true;
+    });
+});
 </script>
 
 <%- include('../partials/footer') %>

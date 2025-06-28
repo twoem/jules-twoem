@@ -1,34 +1,154 @@
-<%- include('../partials/header', { title: 'Admin Login', page_styles: [{cssText: "body { background-image: url('/images/backgrounds/login-bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }"}] }) %>
+<%- include('../partials/header', { title: 'Admin Login', page_styles: [{cssText: `
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    .login-wrapper {
+        min-height: calc(100vh - 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    .admin-login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        position: relative;
+    }
+    .admin-login-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .login-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+    .login-title {
+        color: #2d3748;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .login-subtitle {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    .form-floating > .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 0.75rem;
+        height: auto;
+        background: rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+    }
+    .form-floating > .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        background: white;
+    }
+    .form-floating > label {
+        color: #718096;
+        font-weight: 500;
+    }
+    .login-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    .login-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    .login-btn:hover::before {
+        left: 100%;
+    }
+`}] }) %>
 <%- include('../partials/navbar') %>
 
-<main class="container mt-5 d-flex align-items-center justify-content-center flex-grow-1"> <%# Added flex-grow-1 to main %>
-    <div class="row justify-content-center w-100"> <%# Added w-100 to row for better centering if card is not full width %>
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h2 class="card-title text-center mb-4">Admin Login</h2>
-                    <!-- Placeholder for login messages -->
-                    <% if (typeof error !== 'undefined' && error) { %>
-                        <div class="alert alert-danger"><%= error %></div>
-                    <% } %>
-                    <form action="/admin/login" method="POST"> <!-- Action URL will be handled by admin routes later -->
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email or Admin ID</label>
-                            <input type="text" class="form-control" id="email" name="email" required>
+<div class="login-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="card admin-login-card">
+                    <div class="card-body p-5">
+                        <div class="login-header">
+                            <div class="login-icon">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <h2 class="login-title">Admin Portal</h2>
+                            <p class="login-subtitle">Welcome back! Please sign in to continue.</p>
                         </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Login</button>
-                        </div>
-                    </form>
-                    <!-- Optional: Add a "Forgot Password?" link here later if needed for admins -->
+
+                        <form action="/admin/login" method="POST" id="adminLoginForm">
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                                <label for="email"><i class="fas fa-envelope me-2"></i>Email Address</label>
+                            </div>
+
+                            <div class="form-floating">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary login-btn">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</div>
+
+<script>
+document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+    const button = this.querySelector('button[type="submit"]');
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
+    button.disabled = true;
+});
+</script>
 
 <%- include('../partials/footer') %>
