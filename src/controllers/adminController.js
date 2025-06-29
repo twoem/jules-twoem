@@ -1067,7 +1067,7 @@ module.exports = {
     listCourses, renderAddCourseForm, addCourse, renderEditCourseForm, updateCourse, deleteCourse,
     listStudents, viewStudentDetails, renderEditStudentForm, updateStudent, toggleStudentStatus,
     renderManageStudentEnrollments, enrollStudentInCourse, removeStudentFromCourse,
-    renderEnterMarksForm, saveMarks,
+    renderEnterMarksForm,
     renderLogFeeForm, saveFeeEntry,
     listNotifications, renderCreateNotificationForm, createNotification, deleteNotification,
     listResources, renderCreateResourceForm, createResource, renderEditResourceForm, updateResource, deleteResource,

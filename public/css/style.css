@@ -221,3 +221,118 @@ footer .text-center {
     font-weight: 500;
     padding: 0.3em 0.6em;
 }
+
+/* --- Enhanced Portal UI --- */
+
+/* Main Navigation Bar (Menu) */
+.navbar.bg-custom-primary {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/gallery/twoem-community.jpg'); /* Placeholder: twoem-community.jpg */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Ensure text is readable - already has --navbar-text-color: var(--sky-blue-text-on-dark) which is white */
+    /* Add text shadow for better contrast if needed */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+}
+
+.navbar.bg-custom-primary .navbar-brand,
+.navbar.bg-custom-primary .navbar-nav .nav-link {
+    /* text-shadow: 1px 1px 2px rgba(0,0,0,0.7); */ /* Applied to parent for broader coverage */
+}
+
+/* Portal Cards */
+.card {
+    /* Using a more subtle image or a pattern might be better for cards with text */
+    /* For demonstration, using office-services.jpg. Consider a less busy image. */
+    background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url('/images/gallery/office-services.jpg'); /* Placeholder: office-services.jpg */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1px solid var(--sky-blue-light-accent); /* Keep a subtle border */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 0.75rem 1.5rem rgba(var(--sky-blue-primary-rgb), 0.25);
+}
+
+/* Ensure card content is readable over the background */
+.card .card-body, .card .card-header, .card .card-footer {
+    position: relative; /* Needed if we were to add pseudo-elements for overlays just to these sections */
+    background-color: transparent; /* Make sure these sections don't have their own opaque background */
+}
+
+.card .card-title, .card .card-text, .card h1, .card h2, .card h3, .card h4, .card h5, .card h6, .card a {
+    color: var(--sky-blue-deep); /* Ensure text color contrasts with the lightened image */
+    /* text-shadow: 1px 1px 1px rgba(255,255,255,0.5); /* Light shadow for dark text if needed */
+}
+
+.card .card-header {
+     border-bottom: 1px solid rgba(var(--sky-blue-primary-rgb), 0.3); /* Lighter border for header */
+}
+
+/* Specific adjustments for admin dashboard cards if needed */
+.admin-dashboard-card .card-title { /* Example if you add this class */
+    /* color: #fff; */
+}
+
+/* Specific adjustments for student dashboard cards if needed */
+.student-dashboard-card .list-group-item {
+    /* background-color: rgba(255,255,255,0.7); */ /* Example for list items */
+}
+
+/* Modernizing buttons inside cards */
+.card .btn-primary {
+    background-color: var(--sky-blue-primary);
+    border-color: var(--sky-blue-dark);
+    color: var(--sky-blue-text-on-dark);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card .btn-primary:hover {
+    background-color: var(--sky-blue-dark);
+    border-color: var(--sky-blue-deep);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.card .btn-info { /* Assuming btn-info is used */
+    background-color: var(--sky-blue-light-accent);
+    border-color: var(--sky-blue-primary);
+    color: var(--sky-blue-deep);
+     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card .btn-info:hover {
+    background-color: var(--sky-blue-primary);
+    border-color: var(--sky-blue-dark);
+    color: var(--sky-blue-text-on-dark);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+
+/* Style for list-group-items in student dashboard to make them more card-like */
+.student-dashboard .list-group-item { /* Assuming student-dashboard is a class on student-dashboard.ejs main container or body */
+    margin-bottom: 0.75rem;
+    border-radius: 0.375rem; /* Bootstrap's default card border-radius */
+    border: 1px solid var(--sky-blue-light-accent);
+    background-image: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url('/images/gallery/computer-training.jpg'); /* Different image or more subtle */
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.student-dashboard .list-group-item:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 0.5rem 1rem rgba(var(--sky-blue-primary-rgb), 0.2);
+    z-index: 10; /* Ensure it comes above others on hover */
+}
+.student-dashboard .list-group-item a, .student-dashboard .list-group-item { /* Ensure text inside is styled */
+    color: var(--sky-blue-deep) !important; /* Override default link colors if necessary */
+}
+.student-dashboard .list-group-item i {
+    color: var(--sky-blue-primary);
+}
