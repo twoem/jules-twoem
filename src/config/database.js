@@ -49,17 +49,20 @@ function initializeDb() {
                 registration_number TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 first_name TEXT NOT NULL,
+                second_name TEXT, -- Middle name, optional
+                last_name TEXT NOT NULL,
+                phone_number TEXT, -- Student's own phone number
                 password_hash TEXT NOT NULL,
                 next_of_kin_details TEXT,
                 last_login_at DATETIME,
                 requires_password_change BOOLEAN DEFAULT TRUE,
                 is_profile_complete BOOLEAN DEFAULT FALSE,
                 is_active BOOLEAN DEFAULT TRUE NOT NULL,
-                credentials_retrieved_once BOOLEAN DEFAULT FALSE NOT NULL, -- New column for this feature
+                credentials_retrieved_once BOOLEAN DEFAULT FALSE NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                last_updated_by_admin_id TEXT, -- Stores admin's ID (e.g., admin1)
-                last_updated_by_admin_name TEXT -- Stores admin's name for easier display
+                last_updated_by_admin_id TEXT,
+                last_updated_by_admin_name TEXT
             )
         `, (err) => {
             if (err) console.error("Error creating students table:", err.message);
@@ -105,24 +108,49 @@ function initializeDb() {
             CREATE TABLE IF NOT EXISTS enrollments (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 student_id INTEGER NOT NULL,
-                course_id INTEGER NOT NULL,
+                course_id INTEGER NOT NULL, -- Will typically be 1 for "Basic Computer Training"
                 enrollment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                coursework_marks INTEGER,
-                main_exam_marks INTEGER,
-                final_grade TEXT, -- e.g., 'A', 'B', 'Pass', 'Fail'
+                average_unit_marks REAL,
+                main_exam_theory_marks INTEGER CHECK(main_exam_theory_marks >= 0 AND main_exam_theory_marks <= 100),
+                main_exam_practical_marks INTEGER CHECK(main_exam_practical_marks >= 0 AND main_exam_practical_marks <= 100),
+                final_grade TEXT, -- e.g., 'Pass', 'Fail'
                 certificate_issued_at DATETIME,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
                 FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-                UNIQUE(student_id, course_id) -- Student can only enroll in a course once
+                UNIQUE(student_id, course_id)
             )
         `, (err) => {
             if (err) console.error("Error creating enrollments table:", err.message);
-            else console.log("Enrollments table checked/created.");
+            else {
+                console.log("Enrollments table checked/created.");
+                // Add new columns to enrollments table if they don't exist
+                const enrollmentColumnsToAdd = [
+                    { name: 'average_unit_marks', type: 'REAL' },
+                    { name: 'main_exam_theory_marks', type: 'INTEGER CHECK(main_exam_theory_marks >= 0 AND main_exam_theory_marks <= 100)' },
+                    { name: 'main_exam_practical_marks', type: 'INTEGER CHECK(main_exam_practical_marks >= 0 AND main_exam_practical_marks <= 100)' }
+                ];
+                enrollmentColumnsToAdd.forEach(column => {
+                    db.run(`ALTER TABLE enrollments ADD COLUMN ${column.name} ${column.type}`, (alterErr) => {
+                        if (alterErr) {
+                            if (alterErr.message.includes(`duplicate column name: ${column.name}`)) {
+                                // console.log(`Column ${column.name} already exists in enrollments table.`);
+                            } else {
+                                console.error(`Error adding ${column.name} column to enrollments:`, alterErr.message);
+                            }
+                        } else {
+                            console.log(`Column ${column.name} added to enrollments table.`);
+                        }
+                    });
+                });
+                // Note: Dropping old columns coursework_marks and main_exam_marks is complex in SQLite
+                // and often requires recreating the table. For now, they will remain if the table existed,
+                // but new logic will use the new columns.
+            }
         });
 
-        // Add columns if they don't exist (simple migration)
+        // Add columns if they don't exist (simple migration for students table)
         const columnsToAdd = [
             { name: 'is_active', type: 'BOOLEAN DEFAULT TRUE NOT NULL' },
             { name: 'credentials_retrieved_once', type: 'BOOLEAN DEFAULT FALSE NOT NULL' }
@@ -158,9 +186,22 @@ function initializeDb() {
         // Add columns to students table if they don't exist
         const studentColumnsToAdd = [
             { name: 'last_updated_by_admin_id', type: 'TEXT' },
-            { name: 'last_updated_by_admin_name', type: 'TEXT' }
+            { name: 'last_updated_by_admin_name', type: 'TEXT' },
+            { name: 'second_name', type: 'TEXT' },
+            { name: 'last_name', type: 'TEXT' }, // Will be enforced as NOT NULL by application logic for new entries
+            { name: 'phone_number', type: 'TEXT' }
         ];
         studentColumnsToAdd.forEach(column => {
+            // For last_name, if we wanted to add NOT NULL with a default for existing rows:
+            // let columnDefinition = column.type;
+            // if (column.name === 'last_name') {
+            //    columnDefinition = 'TEXT NOT NULL DEFAULT "Unknown"';
+            //    db.run(`ALTER TABLE students ADD COLUMN ${column.name} ${columnDefinition}`, (alterErr) => { ... });
+            //    db.run(`UPDATE students SET ${column.name} = first_name WHERE ${column.name} = "Unknown"`, (updateErr) => {}); // Example population
+            // } else {
+            //    db.run(`ALTER TABLE students ADD COLUMN ${column.name} ${column.type}`, (alterErr) => { ... });
+            // }
+            // For simplicity now, adding as TEXT and relying on app logic for NOT NULL on new/updates.
             db.run(`ALTER TABLE students ADD COLUMN ${column.name} ${column.type}`, (alterErr) => {
                 if (alterErr) {
                     if (alterErr.message.includes(`duplicate column name: ${column.name}`)) {
@@ -309,6 +350,92 @@ function initializeDb() {
             else console.log("Student_notification_reads table checked/created.");
         });
 
+        // App Counters Table (for sequential registration numbers, etc.)
+        db.run(`
+            CREATE TABLE IF NOT EXISTS app_counters (
+                counter_name TEXT PRIMARY KEY NOT NULL,
+                current_value INTEGER NOT NULL DEFAULT 0
+            )
+        `, (err) => {
+            if (err) {
+                console.error("Error creating app_counters table:", err.message);
+            } else {
+                console.log("App_counters table checked/created.");
+                // Initialize student_reg_suffix if not present
+                db.run(`INSERT OR IGNORE INTO app_counters (counter_name, current_value) VALUES ('student_reg_suffix', 0)`, (initErr) => {
+                    if (initErr) {
+                        console.error("Error initializing student_reg_suffix in app_counters:", initErr.message);
+                    } else {
+                        // console.log("student_reg_suffix counter initialized if it wasn't present.");
+                    }
+                });
+            }
+        });
+
+        // Units Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS units (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                course_id INTEGER NOT NULL,
+                unit_name TEXT NOT NULL UNIQUE,
+                description TEXT, -- Optional
+                FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+            )
+        `, (err) => {
+            if (err) console.error("Error creating units table:", err.message);
+            else {
+                console.log("Units table checked/created.");
+                // Pre-populate units for the main course (assuming course_id 1 is "Basic Computer Training")
+                const unitsToInsert = [
+                    { course_id: 1, unit_name: "Introduction to Computers" },
+                    { course_id: 1, unit_name: "Keyboard Management" },
+                    { course_id: 1, unit_name: "Microsoft Word" },
+                    { course_id: 1, unit_name: "Microsoft Excel" },
+                    { course_id: 1, unit_name: "Microsoft Publisher" },
+                    { course_id: 1, unit_name: "Microsoft PowerPoint" },
+                    { course_id: 1, unit_name: "Microsoft Access" },
+                    { course_id: 1, unit_name: "Internet & Email" }
+                ];
+                // Ensure the main course "Basic Computer Training" exists with ID 1
+                db.run(`INSERT OR IGNORE INTO courses (id, name, description) VALUES (1, 'Basic Computer Training', 'Comprehensive training on basic computer operations and Microsoft Office suite.')`, function(courseErr) {
+                    if (courseErr) {
+                        console.error("Error ensuring main course exists:", courseErr.message);
+                    } else {
+                        // console.log("Main course 'Basic Computer Training' ensured with ID 1. LastID:", this.lastID, "Changes:", this.changes);
+                        unitsToInsert.forEach(unit => {
+                            db.run(`INSERT OR IGNORE INTO units (course_id, unit_name, description) VALUES (?, ?, ?)`,
+                                [unit.course_id, unit.unit_name, unit.description || null],
+                                (unitErr) => {
+                                    if (unitErr) console.error(`Error inserting unit ${unit.unit_name}:`, unitErr.message);
+                                }
+                            );
+                        });
+                    }
+                });
+            }
+        });
+
+        // Student Unit Marks Table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS student_unit_marks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                enrollment_id INTEGER NOT NULL,
+                unit_id INTEGER NOT NULL,
+                marks INTEGER CHECK(marks >= 0 AND marks <= 100),
+                logged_by_admin_id TEXT,
+                logged_by_admin_name TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE,
+                FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE CASCADE,
+                UNIQUE(enrollment_id, unit_id)
+            )
+        `, (err) => {
+            if (err) console.error("Error creating student_unit_marks table:", err.message);
+            else console.log("Student_unit_marks table checked/created.");
+        });
+
+
     });
 }
 
@@ -330,4 +457,7 @@ process.on('SIGINT', () => {
     });
 });
 
-module.exports = db;
+module.exports = {
+    db,
+    getDbPath: () => dbPath // Expose the dbPath
+};

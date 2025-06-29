@@ -90,7 +90,10 @@
                     <p class="card-text small text-muted flex-grow-1">Manage WiFi, view admin action logs, and handle site backups.</p>
                     <a href="/admin/settings/wifi" class="btn btn-sm btn-primary mb-2 d-block">Manage WiFi Settings</a>
                     <a href="/admin/action-logs" class="btn btn-sm btn-info d-block mb-2">View Action Logs</a>
-                    <a href="#" class="btn btn-sm btn-secondary disabled d-block mt-auto">Upload Backup (Soon)</a>
+                    <a href="/admin/settings/backup/download" class="btn btn-sm btn-success d-block mt-auto" onclick="return confirm('Are you sure you want to download the database backup?');">
+                        <i class="fas fa-download"></i> Download DB Backup
+                    </a>
+                    <a href="#" class="btn btn-sm btn-secondary disabled d-block mt-1">Upload/Restore Backup (Soon)</a>
                 </div>
             </div>
         </div>

@@ -34,27 +34,63 @@
         <% } %>
 
         <form action="/admin/enrollments/<%= enrollment.id %>/marks" method="POST">
+            <h4 class="mt-4">Unit Marks (Each out of 100)</h4>
+            <p class="text-muted small">The average of these unit marks will contribute 30% to the final grade.</p>
+            <div class="row">
+                <% units.forEach(function(unit, index) { %>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <label for="unit_marks_<%= unit.id %>" class="form-label"><%= unit.unit_name %></label>
+                        <input type="number" class="form-control form-control-sm"
+                               id="unit_marks_<%= unit.id %>"
+                               name="unit_marks[<%= unit.id %>]"
+                               min="0" max="100"
+                               value="<%= locals.unit_marks && locals.unit_marks[unit.id] !== undefined ? locals.unit_marks[unit.id] : (unit.marks !== undefined ? unit.marks : '') %>">
+                        <% if (locals.errors && errors.find(e => e.param === `unit_marks[${unit.id}]`)) { %>
+                            <div class="text-danger small mt-1"><%= errors.find(e => e.param === `unit_marks[${unit.id}]`).msg %></div>
+                        <% } %>
+                    </div>
+                <% }); %>
+            </div>
+
+            <h4 class="mt-4">Main Exams (Each out of 100)</h4>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="coursework_marks" class="form-label">Coursework Marks (out of 100, contributes 30%)</label>
-                    <input type="number" class="form-control" id="coursework_marks" name="coursework_marks" min="0" max="100" value="<%= locals.coursework_marks !== undefined ? locals.coursework_marks : (enrollment.coursework_marks || '') %>">
+                    <label for="main_exam_theory_marks" class="form-label">Main Exam Theory Marks (Contributes 35%)</label>
+                    <input type="number" class="form-control" id="main_exam_theory_marks" name="main_exam_theory_marks" min="0" max="100" value="<%= locals.main_exam_theory_marks !== undefined ? locals.main_exam_theory_marks : (enrollment.main_exam_theory_marks !== null ? enrollment.main_exam_theory_marks : '') %>">
+                    <% if (locals.errors && errors.find(e => e.param === 'main_exam_theory_marks')) { %><div class="text-danger small mt-1"><%= errors.find(e => e.param === 'main_exam_theory_marks').msg %></div><% } %>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="main_exam_marks" class="form-label">Main Exam Marks (out of 100, contributes 70%)</label>
-                    <input type="number" class="form-control" id="main_exam_marks" name="main_exam_marks" min="0" max="100" value="<%= locals.main_exam_marks !== undefined ? locals.main_exam_marks : (enrollment.main_exam_marks || '') %>">
+                    <label for="main_exam_practical_marks" class="form-label">Main Exam Practical Marks (Contributes 35%)</label>
+                    <input type="number" class="form-control" id="main_exam_practical_marks" name="main_exam_practical_marks" min="0" max="100" value="<%= locals.main_exam_practical_marks !== undefined ? locals.main_exam_practical_marks : (enrollment.main_exam_practical_marks !== null ? enrollment.main_exam_practical_marks : '') %>">
+                    <% if (locals.errors && errors.find(e => e.param === 'main_exam_practical_marks')) { %><div class="text-danger small mt-1"><%= errors.find(e => e.param === 'main_exam_practical_marks').msg %></div><% } %>
                 </div>
             </div>
 
             <% if (enrollment.final_grade) { %>
-                <div class="alert alert-info">
-                    Current Calculated Total: <strong>
-                        <%= ((enrollment.coursework_marks || 0) * 0.3 + (enrollment.main_exam_marks || 0) * 0.7).toFixed(2) %>%
-                    </strong><br>
+                <div class="alert alert-info mt-3">
+                    <%
+                        let displayAverageUnitMarks = enrollment.average_unit_marks !== null ? enrollment.average_unit_marks.toFixed(2) + '%' : 'N/A';
+                        let displayTheoryMarks = enrollment.main_exam_theory_marks !== null ? enrollment.main_exam_theory_marks : 'N/A';
+                        let displayPracticalMarks = enrollment.main_exam_practical_marks !== null ? enrollment.main_exam_practical_marks : 'N/A';
+                        let displayTotalScore = 'N/A';
+                        if (enrollment.average_unit_marks !== null && enrollment.main_exam_theory_marks !== null && enrollment.main_exam_practical_marks !== null) {
+                            const totalScoreCalc = (enrollment.average_unit_marks * 0.30) + (enrollment.main_exam_theory_marks * 0.35) + (enrollment.main_exam_practical_marks * 0.35);
+                            displayTotalScore = totalScoreCalc.toFixed(2) + '%';
+                        }
+                    %>
+                    Average Unit Marks: <strong><%= displayAverageUnitMarks %></strong> (30%)<br>
+                    Theory Exam: <strong><%= displayTheoryMarks %></strong> (35%)<br>
+                    Practical Exam: <strong><%= displayPracticalMarks %></strong> (35%)<br>
+                    Current Calculated Total Score: <strong><%= displayTotalScore %></strong><br>
                     Current Final Grade: <strong><%= enrollment.final_grade %></strong>
+                </div>
+            <% } else if (enrollment.average_unit_marks !== null || enrollment.main_exam_theory_marks !== null || enrollment.main_exam_practical_marks !== null) { %>
+                <div class="alert alert-secondary mt-3">
+                    Some marks entered, final grade pending complete data.
                 </div>
             <% } %>
 
-            <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-end mt-4">
                 <a href="/admin/students/<%= student.id %>/enrollments" class="btn btn-secondary me-2">
                     <i class="fas fa-arrow-left"></i> Back to Enrollments
                 </a>

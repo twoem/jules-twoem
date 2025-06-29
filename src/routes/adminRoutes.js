@@ -82,7 +82,7 @@ router.post('/students/reset-password/:studentId', authAdmin, adminController.ad
 
 // Admin - Academic Records (Marks) Management Routes
 router.get('/enrollments/:enrollmentId/marks', authAdmin, adminController.renderEnterMarksForm);
-router.post('/enrollments/:enrollmentId/marks', authAdmin, adminController.saveMarks); // saveMarks includes validation
+router.post('/enrollments/:enrollmentId/marks', authAdmin, adminController.saveAcademicMarksValidation, adminController.saveAcademicMarks);
 
 // Admin - Fee Management Routes
 router.get('/students/:studentId/fees/log', authAdmin, adminController.renderLogFeeForm);
@@ -117,6 +117,9 @@ router.post('/documents/delete/:id', authAdmin, adminController.deleteDocument);
 
 // Admin - View Action Logs Route
 router.get('/action-logs', authAdmin, adminController.viewActionLogs);
+
+// Admin - Database Backup Download Route
+router.get('/settings/backup/download', authAdmin, adminController.downloadDatabaseBackup);
 
 
 module.exports = router;

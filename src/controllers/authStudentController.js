@@ -261,16 +261,85 @@ const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs');
 
-const viewMyAcademics = async (req, res) => { /* ... जस का तस ... */
+const viewMyAcademics = async (req, res) => {
     const studentId = req.student.id;
     try {
-        const student = await db.getAsync("SELECT id, first_name FROM students WHERE id = ?", [studentId]);
-        if (!student) { req.flash('error_msg', 'Student record not found.'); return res.redirect('/student/login'); }
-        const enrollments = await db.allAsync(`SELECT e.id as enrollment_id, c.name AS course_name, e.enrollment_date, e.coursework_marks, e.main_exam_marks, ((COALESCE(e.coursework_marks, 0) * 0.3) + (COALESCE(e.main_exam_marks, 0) * 0.7)) AS total_score, e.final_grade, e.certificate_issued_at FROM enrollments e JOIN courses c ON e.course_id = c.id WHERE e.student_id = ? ORDER BY c.name`, [studentId]);
-        res.render('pages/student/academics', { title: 'My Academic Records', student: req.student, enrollments: enrollments || [], PASSING_GRADE: parseInt(process.env.PASSING_GRADE) || 60 });
-    } catch (err) { console.error("Error fetching student academic records:", err); req.flash('error_msg', 'Could not retrieve academic records.'); res.redirect('/student/dashboard'); }
+        const student = await db.getAsync("SELECT id, first_name, second_name, last_name, registration_number FROM students WHERE id = ?", [studentId]);
+        if (!student) {
+            req.flash('error_msg', 'Student record not found.');
+            return res.redirect('/student/login');
+        }
+
+        // Fetch enrollments with new exam mark fields and average unit marks
+        const enrollmentsData = await db.allAsync(`
+            SELECT
+                e.id as enrollment_id,
+                c.name AS course_name,
+                c.id AS course_id,
+                e.enrollment_date,
+                e.average_unit_marks,
+                e.main_exam_theory_marks,
+                e.main_exam_practical_marks,
+                e.final_grade,
+                e.certificate_issued_at
+            FROM enrollments e
+            JOIN courses c ON e.course_id = c.id
+            WHERE e.student_id = ?
+            ORDER BY c.name`,
+            [studentId]
+        );
+
+        const enrollmentsWithDetails = [];
+        for (const enrollment of enrollmentsData) {
+            // Fetch units for the course of this enrollment
+            const units = await db.allAsync(
+                "SELECT id, unit_name FROM units WHERE course_id = ? ORDER BY id",
+                [enrollment.course_id]
+            );
+
+            // Fetch student's marks for these units
+            const unitMarksRecords = await db.allAsync(
+                "SELECT unit_id, marks FROM student_unit_marks WHERE enrollment_id = ?",
+                [enrollment.enrollment_id]
+            );
+            const unitMarksMap = new Map();
+            unitMarksRecords.forEach(um => unitMarksMap.set(um.unit_id, um.marks));
+
+            const unitsWithMarks = units.map(u => ({
+                ...u,
+                marks: unitMarksMap.get(u.id) // undefined if not marked
+            }));
+
+            // Recalculate total score for display consistency
+            let totalScoreForDisplay = null;
+            if (enrollment.average_unit_marks !== null && enrollment.main_exam_theory_marks !== null && enrollment.main_exam_practical_marks !== null) {
+                totalScoreForDisplay = (enrollment.average_unit_marks * 0.30) +
+                                       (enrollment.main_exam_theory_marks * 0.35) +
+                                       (enrollment.main_exam_practical_marks * 0.35);
+            }
+
+            enrollmentsWithDetails.push({
+                ...enrollment,
+                units: unitsWithMarks,
+                total_score_display: totalScoreForDisplay
+            });
+        }
+
+        res.render('pages/student/academics', {
+            title: 'My Academic Records',
+            // student: req.student, // req.student from token might be stale for names
+            student: student, // Use student data fetched from DB for full name
+            enrollments: enrollmentsWithDetails,
+            PASSING_GRADE: parseInt(process.env.PASSING_GRADE) || 60
+        });
+
+    } catch (err) {
+        console.error("Error fetching student academic records:", err);
+        req.flash('error_msg', 'Could not retrieve academic records. ' + err.message);
+        res.redirect('/student/dashboard');
+    }
 };
-const viewWifiCredentials = async (req, res) => { /* ... जस का तस ... */
+const viewWifiCredentials = async (req, res) => {
     try {
         const settingKeys = ['wifi_ssid', 'wifi_password_plaintext', 'wifi_disclaimer'];
         const settingsData = await db.allAsync( `SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN (?, ?, ?)`, settingsKeys );

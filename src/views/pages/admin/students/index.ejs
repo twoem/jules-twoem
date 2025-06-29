@@ -36,7 +36,7 @@
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Reg. Number</th>
-                        <th scope="col">First Name</th>
+                        <th scope="col">Full Name</th>
                         <th scope="col">Email</th>
                         <th scope="col">Status</th>
                         <th scope="col">Registered At</th>
@@ -49,7 +49,14 @@
                         <tr>
                             <td><%= student.id %></td>
                             <td><%= student.registration_number %></td>
-                            <td><%= student.first_name %></td>
+                            <td>
+                                <%= student.first_name %> <%= student.second_name ? student.second_name + ' ' : '' %><%= student.last_name %>
+                                <% if (!student.last_name && !student.second_name) { %>
+                                    (Name not fully set)
+                                <% } else if (!student.last_name) { %>
+                                    (Last name missing)
+                                <% } %>
+                            </td>
                             <td><a href="mailto:<%= student.email %>"><%= student.email %></a></td>
                             <td>
                                 <% if (student.is_active) { %>

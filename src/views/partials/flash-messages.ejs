@@ -1,37 +1,60 @@
-<% if (locals.success_msg && locals.success_msg.length > 0) { %>
-    <% locals.success_msg.forEach(function(msg) { %>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <%= msg %>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <% }); %>
-<% } %>
+<%
+let allMessages = [];
+if (locals.success_msg && Array.isArray(locals.success_msg)) {
+    locals.success_msg.forEach(function(msg) {
+        if(msg && msg.trim() !== '') allMessages.push({ type: 'success', content: msg });
+    });
+} else if (locals.success_msg && typeof locals.success_msg === 'string' && locals.success_msg.trim() !== '') {
+     allMessages.push({ type: 'success', content: locals.success_msg });
+}
 
-<% if (locals.error_msg && locals.error_msg.length > 0) { %>
-    <% locals.error_msg.forEach(function(msg) { %>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <%= msg %>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <% }); %>
-<% } %>
+if (locals.error_msg && Array.isArray(locals.error_msg)) {
+    locals.error_msg.forEach(function(msg) {
+        if(msg && msg.trim() !== '') allMessages.push({ type: 'danger', content: msg });
+    });
+} else if (locals.error_msg && typeof locals.error_msg === 'string' && locals.error_msg.trim() !== '') {
+    allMessages.push({ type: 'danger', content: locals.error_msg });
+}
 
-<% if (locals.error && locals.error.length > 0) { %> <%# For single error string from req.flash('error') %>
-     <% locals.error.forEach(function(msg) { %>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <%= msg %>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <% }); %>
-<% } %>
+// Handle 'error' (often from req.flash('error', '...'))
+if (locals.error && Array.isArray(locals.error)) {
+     locals.error.forEach(function(msg) {
+        if(msg && msg.trim() !== '') allMessages.push({ type: 'danger', content: msg });
+    });
+} else if (locals.error && typeof locals.error === 'string' && locals.error.trim() !== '') {
+    allMessages.push({ type: 'danger', content: locals.error });
+}
 
-<% if (locals.errors && locals.errors.length > 0 && locals.errors.every(e => e.msg)) { %> <%# For express-validator errors array %>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <ul class="mb-0">
-            <% errors.forEach(function(error) { %>
-                <li><%= error.msg %></li>
-            <% }); %>
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+// Handle 'errors' from express-validator (array of objects with 'msg' property)
+if (locals.errors && Array.isArray(locals.errors) && locals.errors.length > 0) {
+    locals.errors.forEach(function(err) {
+        if (err && err.msg && err.msg.trim() !== '') allMessages.push({ type: 'danger', content: err.msg });
+    });
+}
+%>
+
+<% if (allMessages.length > 0) { %>
+    <div id="flashMessageDataContainer" style="display: none;">
+        <% allMessages.forEach(function(msg) { %>
+            <div class="flash-message-data" data-type="<%= msg.type %>" data-content="<%- msg.content %>"></div>
+        <% }); %>
     </div>
 <% } %>
+
+<!-- Modal structure -->
+<div class="modal fade" id="flashMessageModal" tabindex="-1" aria-labelledby="flashMessageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"> <!-- Will be styled by JS -->
+                <h5 class="modal-title" id="flashMessageModalLabel">Notification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="flashMessageModalBody">
+                <!-- Message content will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

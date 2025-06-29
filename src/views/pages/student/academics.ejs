@@ -23,23 +23,33 @@
                     <tr>
                         <th scope="col">Course Name</th>
                         <th scope="col">Enrollment Date</th>
-                        <th scope="col">Coursework Marks (/100)</th>
-                        <th scope="col">Main Exam Marks (/100)</th>
+                        <th scope="col">Unit Marks (Avg. 30%)</th>
+                        <th scope="col">Theory Exam (35%)</th>
+                        <th scope="col">Practical Exam (35%)</th>
                         <th scope="col">Total Score (/100)</th>
                         <th scope="col">Final Grade</th>
-                        <!-- <th scope="col">Certificate</th> Placeholder for later -->
                     </tr>
                 </thead>
                 <tbody>
                     <% enrollments.forEach(function(enrollment) { %>
                         <tr>
-                            <td><%= enrollment.course_name %></td>
-                            <td><%= new Date(enrollment.enrollment_date).toLocaleDateString() %></td>
-                            <td><%= enrollment.coursework_marks !== null ? enrollment.coursework_marks : 'Pending' %></td>
-                            <td><%= enrollment.main_exam_marks !== null ? enrollment.main_exam_marks : 'Pending' %></td>
                             <td>
-                                <% if (enrollment.coursework_marks !== null && enrollment.main_exam_marks !== null) { %>
-                                    <%= enrollment.total_score.toFixed(2) %>
+                                <%= enrollment.course_name %>
+                                <% if (enrollment.units && enrollment.units.length > 0) { %>
+                                    <ul class="list-unstyled small mt-1 mb-0">
+                                        <% enrollment.units.forEach(function(unit) { %>
+                                            <li><%= unit.unit_name %>: <%= unit.marks !== undefined && unit.marks !== null ? unit.marks : 'N/A' %></li>
+                                        <% }); %>
+                                    </ul>
+                                <% } %>
+                            </td>
+                            <td><%= new Date(enrollment.enrollment_date).toLocaleDateString() %></td>
+                            <td><%= enrollment.average_unit_marks !== null ? enrollment.average_unit_marks.toFixed(2) + '%' : 'Pending' %></td>
+                            <td><%= enrollment.main_exam_theory_marks !== null ? enrollment.main_exam_theory_marks : 'Pending' %></td>
+                            <td><%= enrollment.main_exam_practical_marks !== null ? enrollment.main_exam_practical_marks : 'Pending' %></td>
+                            <td>
+                                <% if (enrollment.total_score_display !== null) { %>
+                                    <%= enrollment.total_score_display.toFixed(2) %>%
                                 <% } else { %>
                                     Pending
                                 <% } %>

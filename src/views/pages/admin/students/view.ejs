@@ -18,11 +18,24 @@
             <div class="col-md-6">
                 <h4>Personal Information</h4>
                 <dl class="row">
-                    <dt class="col-sm-4">Full Name:</dt>
+                    <dt class="col-sm-4">First Name:</dt>
                     <dd class="col-sm-8"><%= student.first_name %></dd>
+
+                    <% if (student.second_name) { %>
+                        <dt class="col-sm-4">Second Name:</dt>
+                        <dd class="col-sm-8"><%= student.second_name %></dd>
+                    <% } %>
+
+                    <dt class="col-sm-4">Last Name:</dt>
+                    <dd class="col-sm-8"><%= student.last_name %></dd>
 
                     <dt class="col-sm-4">Email:</dt>
                     <dd class="col-sm-8"><a href="mailto:<%= student.email %>"><%= student.email %></a></dd>
+
+                    <% if (student.phone_number) { %>
+                        <dt class="col-sm-4">Phone Number:</dt>
+                        <dd class="col-sm-8"><%= student.phone_number %></dd>
+                    <% } %>
 
                     <dt class="col-sm-4">Registration #:</dt>
                     <dd class="col-sm-8"><%= student.registration_number %></dd>
@@ -33,11 +46,25 @@
                     <dt class="col-sm-4">Last Login:</dt>
                     <dd class="col-sm-8"><%= student.last_login_at ? new Date(student.last_login_at).toLocaleString() : 'Never' %></dd>
 
+                    <dt class="col-sm-4">Status:</dt>
+                    <dd class="col-sm-8">
+                        <% if (student.is_active) { %>
+                            <span class="badge bg-success">Active</span>
+                        <% } else { %>
+                            <span class="badge bg-danger">Inactive</span>
+                        <% } %>
+                    </dd>
+
                     <dt class="col-sm-4">Password Changed:</dt>
                     <dd class="col-sm-8"><%= student.requires_password_change ? 'No (Default Password Active)' : 'Yes' %></dd>
 
-                    <dt class="col-sm-4">Profile Complete:</dt>
-                    <dd class="col-sm-8"><%= student.is_profile_complete ? 'Yes' : 'No (Next of Kin pending)' %></dd>
+                    <dt class="col-sm-4">Profile Complete (NOK):</dt>
+                    <dd class="col-sm-8"><%= student.is_profile_complete ? 'Yes' : 'No' %></dd>
+
+                    <% if (student.last_updated_by_admin_name) { %>
+                        <dt class="col-sm-4">Last Updated By:</dt>
+                        <dd class="col-sm-8"><%= student.last_updated_by_admin_name %> on <%= new Date(student.updated_at).toLocaleString() %></dd>
+                    <% } %>
                 </dl>
 
                 <% if (student.next_of_kin_details) {

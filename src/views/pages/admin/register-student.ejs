@@ -21,17 +21,33 @@
                     <%- include('../../partials/flash-messages') %>
 
                     <form action="/admin/register-student" method="POST">
-                <div class="mb-3">
-                    <label for="firstName" class="form-label">First Name</label>
-                    <input type="text" class="form-control" id="firstName" name="firstName" required value="<%= locals.firstName || '' %>">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" required value="<%= locals.firstName || '' %>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="secondName" class="form-label">Second Name (Optional)</label>
+                        <input type="text" class="form-control" id="secondName" name="secondName" value="<%= locals.secondName || '' %>">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="email" name="email" required value="<%= locals.email || '' %>">
-                    <div class="form-text">The student will use this email for communication and password recovery.</div>
+                    <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="lastName" name="lastName" required value="<%= locals.lastName || '' %>">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" required value="<%= locals.email || '' %>">
+                        <div class="form-text">Used for communication and password recovery.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="phoneNumber" class="form-label">Phone Number (Optional)</label>
+                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" value="<%= locals.phoneNumber || '' %>">
+                    </div>
                 </div>
 
-                <p class="text-muted small">
+                <p class="text-muted small mt-3">
                     A unique Registration Number will be automatically generated.
                     The student will be assigned the default password: <strong><%= process.env.DEFAULT_STUDENT_PASSWORD %></strong>.
                     They will be required to change this password upon their first login.
