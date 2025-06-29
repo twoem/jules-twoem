@@ -32,11 +32,29 @@
 
             <div class="card mt-4">
                 <div class="card-header">
-                    Notifications
+                    Recent Unread Notifications
                 </div>
                 <div class="card-body">
-                    <p class="card-text">No new notifications at this time. (Placeholder)</p>
-                    <!-- List notifications here -->
+                    <% if (typeof recentUnreadNotifications !== 'undefined' && recentUnreadNotifications.length > 0) { %>
+                        <ul class="list-group list-group-flush">
+                            <% recentUnreadNotifications.forEach(function(notification) { %>
+                                <li class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1"><%= notification.title %></h6>
+                                        <small class="text-muted"><%= new Date(notification.created_at).toLocaleDateString() %></small>
+                                    </div>
+                                    <p class="mb-1 small text-muted"><%= notification.message.substring(0, 100) %><% if (notification.message.length > 100) { %>...<% } %></p>
+                                    <a href="/student/notifications#notif-<%= notification.id %>" class="small">View details</a>
+                                </li>
+                            <% }); %>
+                        </ul>
+                        <% if (recentUnreadNotifications.length === 5) { %>
+                            <a href="/student/notifications" class="btn btn-sm btn-outline-primary mt-2 d-block">View All Notifications</a>
+                        <% } %>
+                    <% } else { %>
+                        <p class="card-text">No new unread notifications at this time.</p>
+                         <a href="/student/notifications" class="btn btn-sm btn-outline-secondary mt-2">View All Notifications</a>
+                    <% } %>
                 </div>
             </div>
         </div>

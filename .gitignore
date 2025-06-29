@@ -3,3 +3,7 @@ node_modules/
 npm-debug.log
 *.log
 .DS_Store
+db/
+# Ignore SQLite database files specifically if they might appear elsewhere or have different names
+*.sqlite
+*.sqlite3

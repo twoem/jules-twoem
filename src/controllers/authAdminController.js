@@ -64,7 +64,7 @@ const loginAdmin = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: parseInt(process.env.JWT_EXPIRE_MS || (1 * 60 * 60 * 1000).toString(), 10),
-            path: '/',
+            path: '/admin',
             sameSite: 'Lax' // Explicitly set SameSite
         });
 
@@ -85,7 +85,7 @@ const logoutAdmin = (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         expires: new Date(0),
-        path: '/',
+        path: '/admin',
         sameSite: 'Lax' // Explicitly set SameSite
     });
     req.flash('success_msg', 'You have been logged out successfully.');

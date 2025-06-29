@@ -1,14 +1,32 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs'); // Moved fs require to top
 
-// Determine the database path. Store it in a 'db' directory in the project root.
-const dbPath = path.resolve(__dirname, '../../db/twoem_online.sqlite');
-const dbDir = path.resolve(__dirname, '../../db');
+let dbPath;
+let dbDir;
+
+if (process.env.NODE_ENV === 'production') {
+    // In production, expect DATABASE_FILE_PATH_PROD to be set, e.g., /data/db/twoem_online.sqlite
+    // Render's persistent disks are typically mounted at /data/ or similar.
+    dbPath = process.env.DATABASE_FILE_PATH_PROD || '/data/db/twoem_online.sqlite'; // Fallback for safety
+    dbDir = path.dirname(dbPath);
+    console.log(`Production mode: Using database path at ${dbPath}`);
+} else {
+    // Development: store it in a 'db' directory in the project root.
+    dbDir = path.resolve(__dirname, '../../db');
+    dbPath = path.join(dbDir, 'twoem_online.sqlite');
+    console.log(`Development mode: Using database path at ${dbPath}`);
+}
 
 // Ensure db directory exists
-const fs = require('fs');
 if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+    try {
+        fs.mkdirSync(dbDir, { recursive: true });
+        console.log(`Created database directory: ${dbDir}`);
+    } catch (dirErr) {
+        console.error(`Error creating database directory ${dbDir}:`, dirErr);
+        // Decide if to throw or let sqlite3 handle path error
+    }
 }
 
 // Initialize the database
@@ -39,7 +57,9 @@ function initializeDb() {
                 is_active BOOLEAN DEFAULT TRUE NOT NULL,
                 credentials_retrieved_once BOOLEAN DEFAULT FALSE NOT NULL, -- New column for this feature
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_updated_by_admin_id TEXT, -- Stores admin's ID (e.g., admin1)
+                last_updated_by_admin_name TEXT -- Stores admin's name for easier display
             )
         `, (err) => {
             if (err) console.error("Error creating students table:", err.message);
@@ -135,6 +155,24 @@ function initializeDb() {
             });
         });
 
+        // Add columns to students table if they don't exist
+        const studentColumnsToAdd = [
+            { name: 'last_updated_by_admin_id', type: 'TEXT' },
+            { name: 'last_updated_by_admin_name', type: 'TEXT' }
+        ];
+        studentColumnsToAdd.forEach(column => {
+            db.run(`ALTER TABLE students ADD COLUMN ${column.name} ${column.type}`, (alterErr) => {
+                if (alterErr) {
+                    if (alterErr.message.includes(`duplicate column name: ${column.name}`)) {
+                        // console.log(`Column ${column.name} already exists in students table.`);
+                    } else {
+                        console.error(`Error adding ${column.name} column to students:`, alterErr.message);
+                    }
+                } else {
+                    console.log(`Column ${column.name} added to students table.`);
+                }
+            });
+        });
 
         // Fees Table
         db.run(`
@@ -150,11 +188,25 @@ function initializeDb() {
                 logged_by_admin_id TEXT, -- Admin's ID (e.g., admin1, admin2 from .env) or email
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                logged_by_admin_name TEXT, -- Stores admin's name for easier display
                 FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
             )
         `, (err) => {
             if (err) console.error("Error creating fees table:", err.message);
             else console.log("Fees table checked/created.");
+        });
+
+        // Add logged_by_admin_name to fees table if it doesn't exist
+        db.run(`ALTER TABLE fees ADD COLUMN logged_by_admin_name TEXT`, (alterErr) => {
+            if (alterErr) {
+                if (alterErr.message.includes(`duplicate column name: logged_by_admin_name`)) {
+                    // console.log(`Column logged_by_admin_name already exists in fees table.`);
+                } else {
+                    console.error(`Error adding logged_by_admin_name column to fees:`, alterErr.message);
+                }
+            } else {
+                console.log(`Column logged_by_admin_name added to fees table.`);
+            }
         });
 
         // Notifications Table

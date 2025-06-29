@@ -29,12 +29,15 @@ router.get('/login', (req, res) => {
 router.post('/login', authAdminController.loginAdmin);
 
 // GET Admin dashboard (protected)
-router.get('/dashboard', authAdmin, (req, res) => {
-    res.render('pages/admin-dashboard', {
-        title: 'Admin Dashboard',
-        admin: req.admin // req.admin is populated by authAdmin middleware
-    });
-});
+// router.get('/dashboard', authAdmin, (req, res) => { // Original simpler render
+//     res.render('pages/admin-dashboard', {
+//         title: 'Admin Dashboard',
+//         admin: req.admin // req.admin is populated by authAdmin middleware
+//     });
+// });
+// Updated to use the new controller function that fetches activity
+router.get('/dashboard', authAdmin, require('../controllers/adminController').renderAdminDashboardWithActivity);
+
 
 // POST Admin logout
 router.post('/logout', authAdminController.logoutAdmin);

@@ -3,6 +3,10 @@ const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 const { body, validationResult } = require('express-validator');
 const { getJwtSecret } = require('../utils/jwtHelper'); // Import getJwtSecret
+const puppeteer = require('puppeteer');
+const ejs = require('ejs');
+const path = require('path');
+const fs = require('fs');
 
 // Student Login
 const loginStudent = async (req, res) => {
@@ -252,6 +256,11 @@ const viewMyFees = async (req, res) => { /* ... जस का तस ... */
         res.render('pages/student/fees', { title: 'My Fee Statement', student: req.student, fees: fees || [], overallBalance });
     } catch (err) { console.error("Error fetching student fee records:", err); req.flash('error_msg', 'Could not retrieve fee statement.'); res.redirect('/student/dashboard'); }
 };
+const puppeteer = require('puppeteer');
+const ejs = require('ejs');
+const path = require('path');
+const fs = require('fs');
+
 const viewMyAcademics = async (req, res) => { /* ... जस का तस ... */
     const studentId = req.student.id;
     try {
@@ -286,20 +295,84 @@ const renderMyCertificatesPage = async (req, res) => { /* ... जस का त�
         res.render('pages/student/certificates', { title: 'My Certificates', student: req.student, eligibleCertificates, feesCleared });
     } catch (err) { console.error("Error fetching certificate eligibility:", err); req.flash('error_msg', 'Could not retrieve certificate information.'); res.redirect('/student/dashboard'); }
 };
-const downloadCertificate = async (req, res) => { /* ... जस का तस ... */
+
+const downloadCertificate = async (req, res) => {
     const studentId = req.student.id;
     const enrollmentId = req.params.enrollmentId;
+
     try {
         const feeRecords = await db.allAsync("SELECT total_amount, amount_paid FROM fees WHERE student_id = ?", [studentId]);
         let totalCharged = 0; let totalPaid = 0;
         feeRecords.forEach(fee => { totalCharged += fee.total_amount || 0; totalPaid += fee.amount_paid || 0; });
         const feesCleared = (totalCharged - totalPaid) <= 0;
-        const enrollment = await db.getAsync(`SELECT e.id, s.first_name as student_name, s.registration_number, c.name as course_name, e.final_grade, e.updated_at as completion_date FROM enrollments e JOIN students s ON e.student_id = s.id JOIN courses c ON e.course_id = c.id WHERE e.id = ? AND e.student_id = ? AND e.final_grade = 'Pass'`, [enrollmentId, studentId]);
-        if (!enrollment) { req.flash('error_msg', 'Course completion record not found or not passed.'); return res.redirect('/student/my-certificates'); }
-        if (!feesCleared) { req.flash('error_msg', 'Cannot download certificate due to outstanding fees.'); return res.redirect('/student/my-certificates'); }
-        res.render('pages/student/certificate-template', { layout: 'partials/certificate-layout', title: `Certificate - ${enrollment.course_name}`, student_name: enrollment.student_name, course_name: enrollment.course_name, registration_number: enrollment.registration_number, completion_date: new Date(enrollment.completion_date).toLocaleDateString() });
-    } catch (err) { console.error("Error generating certificate:", err); req.flash('error_msg', 'Could not generate certificate.'); res.redirect('/student/my-certificates'); }
+
+        const enrollment = await db.getAsync(
+            `SELECT e.id, s.first_name as student_name, s.registration_number, c.name as course_name, e.final_grade, e.updated_at as completion_date
+             FROM enrollments e
+             JOIN students s ON e.student_id = s.id
+             JOIN courses c ON e.course_id = c.id
+             WHERE e.id = ? AND e.student_id = ? AND e.final_grade = 'Pass'`,
+            [enrollmentId, studentId]
+        );
+
+        if (!enrollment) {
+            req.flash('error_msg', 'Course completion record not found or not passed.');
+            return res.redirect('/student/my-certificates');
+        }
+        if (!feesCleared) {
+            req.flash('error_msg', 'Cannot download certificate due to outstanding fees.');
+            return res.redirect('/student/my-certificates');
+        }
+
+        const certificateData = {
+            title: `Certificate - ${enrollment.course_name}`,
+            student_name: enrollment.student_name,
+            course_name: enrollment.course_name,
+            registration_number: enrollment.registration_number,
+            completion_date: new Date(enrollment.completion_date).toLocaleDateString(),
+            // Corrected path, assuming __dirname is /app/src/controllers
+            logoPath: `file://${path.join(__dirname, '../../public/logo.png')}`
+        };
+
+        const layoutPath = path.join(__dirname, '../views/partials/certificate-layout.ejs');
+        const templatePath = path.join(__dirname, '../views/pages/student/certificate-template.ejs');
+
+        const layoutContent = fs.readFileSync(layoutPath, 'utf-8');
+        const templateContent = fs.readFileSync(templatePath, 'utf-8');
+
+        const mainHtmlContent = ejs.render(templateContent, certificateData);
+        const fullHtmlContent = ejs.render(layoutContent, { ...certificateData, body: mainHtmlContent });
+
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        const page = await browser.newPage();
+
+        const htmlForPdf = fullHtmlContent.replace(/<div class="no-print"[\s\S]*?<\/div>/s, '');
+
+        await page.setContent(htmlForPdf, { waitUntil: 'networkidle0' });
+
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            landscape: true,
+            printBackground: true,
+            margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+        });
+
+        await browser.close();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Certificate-${enrollment.course_name.replace(/\s+/g, '_')}-${enrollment.student_name.replace(/\s+/g, '_')}.pdf"`);
+        res.send(pdfBuffer);
+
+    } catch (err) {
+        console.error("Error generating certificate PDF:", err);
+        req.flash('error_msg', 'Could not generate certificate PDF. ' + err.message);
+        res.redirect('/student/my-certificates');
+    }
 };
+
 const renderChangePasswordForm = (req, res) => { /* ... जस का तस ... */
     res.render('pages/student/profile/change-password', {
         title: 'Change Password',
@@ -376,5 +449,52 @@ module.exports = {
     renderMyCertificatesPage, downloadCertificate,
     renderChangePasswordForm, handleChangePassword,
     renderEditNokForm, handleUpdateNok,
-    retrieveStudentCredentials
+    retrieveStudentCredentials,
+    renderStudentDashboard // Added new function
+};
+
+// Render student dashboard with notifications
+const renderStudentDashboard = async (req, res) => {
+    const studentId = req.student.id;
+    let recentUnreadNotifications = [];
+    try {
+        const enrolledCourses = await db.allAsync("SELECT course_id FROM enrollments WHERE student_id = ?", [studentId]);
+        const enrolledCourseIds = enrolledCourses.map(ec => ec.course_id);
+
+        let queryParams = [studentId, studentId];
+        let coursePlaceholders = '';
+        if (enrolledCourseIds.length > 0) {
+            coursePlaceholders = `OR (n.target_audience_type = 'course_id' AND n.target_audience_identifier IN (${enrolledCourseIds.map(() => '?').join(',')}))`;
+            queryParams.push(...enrolledCourseIds);
+        }
+
+        // queryParams already includes studentId twice, one for snr.student_id in LEFT JOIN, one for target_audience_identifier
+        // The first studentId in queryParams is for snr.student_id = ?
+        // The second studentId in queryParams is for (n.target_audience_type = 'student_id' AND n.target_audience_identifier = ?)
+
+        const sql = `
+            SELECT n.id, n.title, n.message, n.created_at, n.target_audience_type, n.target_audience_identifier
+            FROM notifications n
+            LEFT JOIN student_notification_reads snr ON n.id = snr.notification_id AND snr.student_id = ?
+            WHERE snr.id IS NULL AND (
+                n.target_audience_type = 'all' OR
+                (n.target_audience_type = 'student_id' AND n.target_audience_identifier = ?)
+                ${coursePlaceholders}
+            )
+            ORDER BY n.created_at DESC
+            LIMIT 5
+        `;
+        recentUnreadNotifications = await db.allAsync(sql, queryParams);
+
+    } catch (err) {
+        console.error("Error fetching recent unread notifications for student dashboard:", err);
+        // req.flash('error_msg', 'Could not load recent notifications.'); // Avoid flash here as it's part of dashboard load
+        // Fallback to empty array is fine, error is logged.
+    }
+
+    res.render('pages/student-dashboard', {
+        title: 'Student Dashboard',
+        student: req.student,
+        recentUnreadNotifications
+    });
 };

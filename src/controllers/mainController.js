@@ -87,7 +87,7 @@ const renderServicesPage = async (req, res) => {
         res.status(500).render('pages/services', {
             title: 'Our Services',
             courses: [],
-            error_msg_direct: "Could not load course information at this time." // Use a different var name if needed
+            error_msg: "Could not load course information at this time."
         });
     }
 };
@@ -126,7 +126,7 @@ const renderDownloadsPage = async (req, res) => {
             title: 'Downloads',
             publicDocs: [],
             eulogyDocs: [],
-            error_msg_direct: "Could not load documents at this time."
+            error_msg: "Could not load documents at this time."
         });
     }
 };

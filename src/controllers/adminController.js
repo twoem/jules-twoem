@@ -52,9 +52,9 @@ const registerStudent = async (req, res) => { /* ... Full function from previous
             return res.redirect('/admin/register-student');
         }
         const passwordHash = await bcrypt.hash(defaultPassword, 10);
-        const sql = `INSERT INTO students (registration_number, email, first_name, password_hash, requires_password_change, is_profile_complete, is_active)
-                     VALUES (?, ?, ?, ?, TRUE, FALSE, TRUE)`;
-        const result = await db.runAsync(sql, [registrationNumber, email.toLowerCase(), firstName, passwordHash]);
+        const sql = `INSERT INTO students (registration_number, email, first_name, password_hash, requires_password_change, is_profile_complete, is_active, last_updated_by_admin_id, last_updated_by_admin_name)
+                     VALUES (?, ?, ?, ?, TRUE, FALSE, TRUE, ?, ?)`;
+        const result = await db.runAsync(sql, [registrationNumber, email.toLowerCase(), firstName, passwordHash, admin.id, admin.name]);
         logAdminAction(req.admin.id, 'STUDENT_REGISTERED', `Admin ${admin.name} registered student: ${firstName} (${email}), RegNo: ${registrationNumber}`, 'student', result.lastID, req.ip);
         req.flash('success_msg', `Student ${firstName} (${email}) registered successfully with Registration Number: ${registrationNumber}.`);
         res.redirect('/admin/register-student');
@@ -232,7 +232,7 @@ const updateStudent = [ /* ... Full function from previous state ... */
                     return res.status(400).render('pages/admin/students/edit', { title: 'Edit Student', admin: req.admin, errors: [{ msg: 'This email address is already in use by another student.' }], student: studentForForm, firstName, email });
                 }
             }
-            await db.runAsync("UPDATE students SET first_name = ?, email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [firstName, email.toLowerCase(), studentId]);
+            await db.runAsync("UPDATE students SET first_name = ?, email = ?, updated_at = CURRENT_TIMESTAMP, last_updated_by_admin_id = ?, last_updated_by_admin_name = ? WHERE id = ?", [firstName, email.toLowerCase(), req.admin.id, req.admin.name, studentId]);
             logAdminAction(req.admin.id, 'STUDENT_UPDATED', `Admin ${req.admin.name} updated details for student ID: ${studentId}`, 'student', studentId, req.ip);
             req.flash('success_msg', 'Student details updated successfully.');
             res.redirect(`/admin/students/view/${studentId}`);
@@ -252,7 +252,7 @@ const toggleStudentStatus = async (req, res) => { /* ... Full function from prev
             return res.redirect('/admin/students');
         }
         const newStatus = !student.is_active;
-        await db.runAsync("UPDATE students SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [newStatus, studentId]);
+        await db.runAsync("UPDATE students SET is_active = ?, updated_at = CURRENT_TIMESTAMP, last_updated_by_admin_id = ?, last_updated_by_admin_name = ? WHERE id = ?", [newStatus, req.admin.id, req.admin.name, studentId]);
         const action = newStatus ? 'ACTIVATED' : 'DEACTIVATED';
         logAdminAction(req.admin.id, `STUDENT_${action}`, `Admin ${req.admin.name} ${action.toLowerCase()} student: ${student.first_name} (ID: ${studentId})`, 'student', studentId, req.ip);
         req.flash('success_msg', `Student account ${student.first_name} has been ${action.toLowerCase()}.`);
@@ -402,7 +402,7 @@ const saveFeeEntry = [ /* ... Existing ... */
              return res.status(400).render('pages/admin/fees/log', { title: `Log Fee for ${student.first_name}`, admin: req.admin, student, errors: [{msg: 'Either Charge Amount or Payment Amount must be greater than 0.'}], description, total_amount, amount_paid, payment_date, payment_method, notes });
         }
         try {
-            await db.runAsync(`INSERT INTO fees (student_id, description, total_amount, amount_paid, payment_date, payment_method, notes, logged_by_admin_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`, [studentId, description, chargeAmount, paidAmount, payment_date, payment_method || null, notes || null, req.admin.id]);
+            await db.runAsync(`INSERT INTO fees (student_id, description, total_amount, amount_paid, payment_date, payment_method, notes, logged_by_admin_id, logged_by_admin_name, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`, [studentId, description, chargeAmount, paidAmount, payment_date, payment_method || null, notes || null, req.admin.id, req.admin.name]);
             logAdminAction(req.admin.id, 'FEE_LOGGED', `Admin ${req.admin.name} logged fee entry for ${student.first_name} (ID: ${studentId}). Desc: ${description}, Charge: ${chargeAmount}, Paid: ${paidAmount}`, 'fee', null, req.ip);
             req.flash('success_msg', 'Fee entry logged successfully.');
             res.redirect(`/admin/students/${studentId}/fees/log`);
@@ -783,7 +783,7 @@ const adminResetStudentPassword = async (req, res) => { /* ... Existing ... */
         const defaultPassword = process.env.DEFAULT_STUDENT_PASSWORD;
         if (!defaultPassword) { console.error("CRITICAL: DEFAULT_STUDENT_PASSWORD is not set in .env for admin password reset."); req.flash('error_msg', 'Server configuration error: Default student password not defined.'); return res.redirect(`/admin/students/view/${studentId}`); }
         const passwordHash = await bcrypt.hash(defaultPassword, 10);
-        await db.runAsync( "UPDATE students SET password_hash = ?, requires_password_change = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [passwordHash, studentId] );
+        await db.runAsync( "UPDATE students SET password_hash = ?, requires_password_change = TRUE, updated_at = CURRENT_TIMESTAMP, last_updated_by_admin_id = ?, last_updated_by_admin_name = ? WHERE id = ?", [passwordHash, adminPerformingAction.id, adminPerformingAction.name, studentId] );
         logAdminAction( adminPerformingAction.id, 'STUDENT_PASSWORD_RESET_BY_ADMIN', `Admin ${adminPerformingAction.name} reset password for student ${student.first_name} (ID: ${studentId}) to default.`, 'student', studentId, req.ip );
         req.flash('success_msg', `Password for student ${student.first_name} has been reset to the default. They will be required to change it on next login.`);
         res.redirect(`/admin/students/view/${studentId}`);
@@ -821,5 +821,58 @@ module.exports = {
     listResources, renderCreateResourceForm, createResource, renderEditResourceForm, updateResource, deleteResource,
     renderWifiSettingsForm, updateWifiSettings,
     listDownloadableDocuments, renderCreateDocumentForm, createDocument, renderEditDocumentForm, updateDocument, deleteDocument,
-    viewActionLogs, adminResetStudentPassword
+    viewActionLogs, adminResetStudentPassword,
+    renderAdminDashboardWithActivity // Added new function
+};
+
+// New function to render admin dashboard with last activity
+const renderAdminDashboardWithActivity = async (req, res) => {
+    let lastActivityInfo = {
+        adminName: 'N/A',
+        actionDate: null,
+        actionType: 'No recent activity found.'
+    };
+
+    try {
+        // Get latest student update
+        const latestStudentUpdate = await db.getAsync(`
+            SELECT updated_at, last_updated_by_admin_name
+            FROM students
+            WHERE last_updated_by_admin_name IS NOT NULL
+            ORDER BY updated_at DESC LIMIT 1
+        `);
+
+        // Get latest fee log
+        const latestFeeLog = await db.getAsync(`
+            SELECT created_at, logged_by_admin_name
+            FROM fees
+            WHERE logged_by_admin_name IS NOT NULL
+            ORDER BY created_at DESC LIMIT 1
+        `);
+
+        let studentUpdateTime = latestStudentUpdate ? new Date(latestStudentUpdate.updated_at).getTime() : 0;
+        let feeLogTime = latestFeeLog ? new Date(latestFeeLog.created_at).getTime() : 0;
+
+        if (studentUpdateTime > 0 || feeLogTime > 0) {
+            if (studentUpdateTime >= feeLogTime) {
+                lastActivityInfo.adminName = latestStudentUpdate.last_updated_by_admin_name;
+                lastActivityInfo.actionDate = new Date(latestStudentUpdate.updated_at);
+                lastActivityInfo.actionType = 'Student Record Update';
+            } else {
+                lastActivityInfo.adminName = latestFeeLog.logged_by_admin_name;
+                lastActivityInfo.actionDate = new Date(latestFeeLog.created_at);
+                lastActivityInfo.actionType = 'Fee Log Entry';
+            }
+        }
+    } catch (err) {
+        console.error("Error fetching last activity for admin dashboard:", err);
+        // Keep default lastActivityInfo on error, or set a specific error message
+        lastActivityInfo.actionType = "Error retrieving activity.";
+    }
+
+    res.render('pages/admin-dashboard', {
+        title: 'Admin Dashboard',
+        admin: req.admin,
+        lastActivityInfo
+    });
 };

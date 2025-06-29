@@ -21,7 +21,19 @@
     <% if (typeof admin !== 'undefined' && admin && admin.email) { %>
         <p class="small text-muted">Logged in as: <%= admin.email %></p>
     <% } %>
-    <p class="small text-muted">Last student/fees update by: [Admin Name] on [Date] (Placeholder - to be implemented)</p>
+    <% if (typeof lastActivityInfo !== 'undefined') { %>
+        <p class="small text-muted">
+            Last Activity:
+            <% if (lastActivityInfo.actionDate) { %>
+                <strong><%= lastActivityInfo.actionType %></strong> by <strong><%= lastActivityInfo.adminName %></strong> on <%= new Date(lastActivityInfo.actionDate).toLocaleString() %>
+            <% } else { %>
+                <%= lastActivityInfo.actionType %>
+            <% } %>
+        </p>
+    <% } else { %>
+        <p class="small text-muted">Last student/fees update by: [Admin Name] on [Date] (Placeholder - to be implemented)</p>
+    <% } %>
+
 
     <div class="row mt-4 g-4">
         <div class="col-md-6 col-lg-4 mb-4">

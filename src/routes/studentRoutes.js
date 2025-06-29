@@ -34,12 +34,14 @@ router.post('/reset-password', authStudentController.handleResetPassword);
 // --- Protected Student Routes (Auth Required) ---
 
 // GET Student dashboard
-router.get('/dashboard', authStudent, (req, res) => {
-    res.render('pages/student-dashboard', {
-        title: 'Student Dashboard',
-        student: req.student
-    });
-});
+// router.get('/dashboard', authStudent, (req, res) => { // Original simple render
+//     res.render('pages/student-dashboard', {
+//         title: 'Student Dashboard',
+//         student: req.student
+//     });
+// });
+router.get('/dashboard', authStudent, authStudentController.renderStudentDashboard);
+
 
 // POST Student logout
 router.post('/logout', authStudent, authStudentController.logoutStudent); // Protected: only logged-in student can log themselves out

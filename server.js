@@ -59,6 +59,12 @@ app.use('/admin', adminRoutes); // Mount admin routes under /admin prefix
 const studentRoutes = require('./src/routes/studentRoutes'); // Import student routes
 app.use('/student', studentRoutes); // Mount student routes under /student prefix
 
+// Health check endpoint
+app.get('/healthz', (req, res) => {
+    // Could add more sophisticated checks here (e.g., DB connectivity)
+    res.status(200).send('OK');
+});
+
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
     res.status(404).render('pages/errors/404', {
