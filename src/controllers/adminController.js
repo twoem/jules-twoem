@@ -1062,54 +1062,6 @@ const viewActionLogs = async (req, res) => {
     }
 };
 
-module.exports = {
-    renderRegisterStudentForm, registerStudent,
-    listCourses, renderAddCourseForm, addCourse, renderEditCourseForm, updateCourse, deleteCourse,
-    listStudents, viewStudentDetails, renderEditStudentForm, updateStudent, toggleStudentStatus,
-    renderManageStudentEnrollments, enrollStudentInCourse, removeStudentFromCourse,
-    renderEnterMarksForm,
-    renderLogFeeForm, saveFeeEntry,
-    listNotifications, renderCreateNotificationForm, createNotification, deleteNotification,
-    listResources, renderCreateResourceForm, createResource, renderEditResourceForm, updateResource, deleteResource,
-    renderWifiSettingsForm, updateWifiSettings,
-    listDownloadableDocuments, renderCreateDocumentForm, createDocument, renderEditDocumentForm, updateDocument, deleteDocument,
-    viewActionLogs, adminResetStudentPassword,
-    renderAdminDashboardWithActivity, // Added new function
-    saveAcademicMarksValidation,
-    saveAcademicMarks,
-    downloadDatabaseBackup // Export new backup function
-};
-
-const downloadDatabaseBackup = (req, res) => {
-    const { getDbPath } = require('../config/database'); // Import getDbPath specifically here or at top
-    const fs = require('fs'); // Node.js fs module, ensure it's at top if not already
-
-    const actualDbPath = getDbPath();
-
-    if (!fs.existsSync(actualDbPath)) {
-        console.error("Database file not found for backup:", actualDbPath);
-        req.flash('error_msg', 'Database file not found. Cannot perform backup.');
-        return res.redirect('/admin/dashboard');
-    }
-
-    logAdminAction(req.admin.id, 'DATABASE_BACKUP_DOWNLOADED', `Admin ${req.admin.name} downloaded a database backup.`, 'database', null, req.ip);
-
-    const backupFilename = `twoem_online_backup_${new Date().toISOString().replace(/:/g, '-').split('.')[0]}.sqlite`;
-
-    res.download(actualDbPath, backupFilename, (err) => {
-        if (err) {
-            console.error("Error downloading database backup:", err);
-            if (!res.headersSent) {
-                req.flash('error_msg', 'Error downloading database backup. Check server logs.');
-                res.redirect('/admin/dashboard');
-            } else {
-                console.error("Headers already sent, could not send error flash message to client for DB backup failure.");
-            }
-        }
-    });
-};
-
-
 // New function to render admin dashboard with last activity
 const renderAdminDashboardWithActivity = async (req, res) => {
     let lastActivityInfo = {
@@ -1159,5 +1111,52 @@ const renderAdminDashboardWithActivity = async (req, res) => {
         title: 'Admin Dashboard',
         admin: req.admin,
         lastActivityInfo
+    });
+};
+
+module.exports = {
+    renderRegisterStudentForm, registerStudent,
+    listCourses, renderAddCourseForm, addCourse, renderEditCourseForm, updateCourse, deleteCourse,
+    listStudents, viewStudentDetails, renderEditStudentForm, updateStudent, toggleStudentStatus,
+    renderManageStudentEnrollments, enrollStudentInCourse, removeStudentFromCourse,
+    renderEnterMarksForm,
+    renderLogFeeForm, saveFeeEntry,
+    listNotifications, renderCreateNotificationForm, createNotification, deleteNotification,
+    listResources, renderCreateResourceForm, createResource, renderEditResourceForm, updateResource, deleteResource,
+    renderWifiSettingsForm, updateWifiSettings,
+    listDownloadableDocuments, renderCreateDocumentForm, createDocument, renderEditDocumentForm, updateDocument, deleteDocument,
+    viewActionLogs, adminResetStudentPassword,
+    renderAdminDashboardWithActivity, // Added new function
+    saveAcademicMarksValidation,
+    saveAcademicMarks,
+    downloadDatabaseBackup // Export new backup function
+};
+
+const downloadDatabaseBackup = (req, res) => {
+    const { getDbPath } = require('../config/database'); // Import getDbPath specifically here or at top
+    const fs = require('fs'); // Node.js fs module, ensure it's at top if not already
+
+    const actualDbPath = getDbPath();
+
+    if (!fs.existsSync(actualDbPath)) {
+        console.error("Database file not found for backup:", actualDbPath);
+        req.flash('error_msg', 'Database file not found. Cannot perform backup.');
+        return res.redirect('/admin/dashboard');
+    }
+
+    logAdminAction(req.admin.id, 'DATABASE_BACKUP_DOWNLOADED', `Admin ${req.admin.name} downloaded a database backup.`, 'database', null, req.ip);
+
+    const backupFilename = `twoem_online_backup_${new Date().toISOString().replace(/:/g, '-').split('.')[0]}.sqlite`;
+
+    res.download(actualDbPath, backupFilename, (err) => {
+        if (err) {
+            console.error("Error downloading database backup:", err);
+            if (!res.headersSent) {
+                req.flash('error_msg', 'Error downloading database backup. Check server logs.');
+                res.redirect('/admin/dashboard');
+            } else {
+                console.error("Headers already sent, could not send error flash message to client for DB backup failure.");
+            }
+        }
     });
 };
